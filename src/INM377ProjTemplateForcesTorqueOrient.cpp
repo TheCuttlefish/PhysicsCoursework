@@ -289,6 +289,17 @@ void	INM377ProjTemplateTorqueOrient::clientResetScene()
 
 void INM377ProjTemplateTorqueOrient::keyboardCallback(unsigned char key, int x, int y)
 {
+
+
+	if (key == '1') {
+
+
+		for (auto & boid : boids) {
+			boid.drawGizmos =! boid.drawGizmos;
+		}
+	}
+
+
 	if (key=='p')
 	{
 		switch (m_ccdMode)

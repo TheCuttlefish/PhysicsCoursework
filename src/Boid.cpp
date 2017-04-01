@@ -2,7 +2,80 @@
 #include "GlutStuff.h"
 
 
-void DrawLine1(btVector3 &from, btVector3 &to, btVector3 &c) {
+
+
+
+void Boid::Run()
+{
+
+
+	//main physics
+	{
+		position = btVector3(body0->getWorldTransform().getOrigin());//boid pos
+		mass = body0->getInvMass();
+		vel = body0->getLinearVelocity();
+		vel.safeNormalize();//normalise
+		gravity = body0->getGravity();
+		trans = btTransform(body0->getOrientation());
+		avel = body0->getAngularVelocity();
+		thrust = THRUST_FORCE * boid_front;
+		drag = -15 * vel;
+		lift = -1.00 * gravity * vel.length();
+		boid_front = trans * vec.forward;
+		boid_top = trans * vec.up;
+		boid_right = trans * vec.right;
+		//add forces
+		body0->applyTorque(10.0 * boid_front.cross(dir) - 6.0*avel);
+		body0->applyTorque(-6.5 * vec.up);//stay up
+		body0->applyTorque(10.5 * boid_top.cross(vec.up) - 10 * avel);//left/right tilt
+		LimitVelocity(MAX_VELOCITY);//apply velocity
+	}
+
+	
+	RadialLimit(MAX_DISTANCE);
+
+
+	DrawLine1(position, position + boid_front * 15, colour.blue);
+	DrawLine1(position, position + boid_top * 15, colour.green);
+	DrawLine1(position, position + boid_right * 15, colour.red);
+
+
+}
+
+
+
+
+void Boid::LimitVelocity(btScalar _limit)
+{
+	float velocity = body0->getLinearVelocity().length();
+	if (velocity < _limit) {
+		body0->applyCentralForce(thrust + lift + gravity + drag);
+	}
+	else {
+		body0->applyCentralForce(lift + gravity + drag);
+	}
+}
+
+void Boid::RadialLimit(btScalar _limit)
+{
+	if ((position.length()>_limit) && (btDot(-position.normalized(), boid_front)< 0.5)) {
+		dir = btVector3(-position.normalized());
+		DrawLine1(position, vec.zero, colour.white);
+
+	}
+	else {
+		dir = vec.zero;
+		DrawLine1(position, vec.zero, colour.black);
+	}
+}
+
+
+
+
+void Boid::DrawLine1(const btVector3 &from, const btVector3 &to, const btVector3 &c) {
+
+	if (!drawGizmos)return;
+
 	glLineWidth(2.0f);
 	glBegin(GL_LINES);
 	glColor3f(c.x(), c.y(), c.z());
@@ -11,94 +84,4 @@ void DrawLine1(btVector3 &from, btVector3 &to, btVector3 &c) {
 	glEnd();
 
 }
-
-
-void Boid::Run()
-{
-
-
-	//distance
-	float centerDist = body0->getWorldTransform().getOrigin().length();
-	btVector3 lookAtCenter = -btVector3(body0->getWorldTransform().getOrigin());//negative pos
-	lookAtCenter.normalize();// normalise it
-	btVector3 boidPos = btVector3(body0->getWorldTransform().getOrigin());//boid pos
-	btVector3 boidForward = btVector3(body0->getWorldTransform().getOrigin()) * btVector3(1, 0, 0);//boid pos
-	btVector3 boidUp = btVector3(body0->getWorldTransform().getOrigin()) * btVector3(0, 1, 0);//boid up
-																							  //body0->getCenterOfMassTransform()
-	boidForward.normalize();//normalised
-
-
-
-	//string example;
-	//example = std::to_string(centerDist);
-	//printf(example.c_str());
-	//printf("\n");
-
-
-
-	btScalar mass = body0->getInvMass();
-	btVector3 vel = body0->getLinearVelocity();
-	btVector3 gravity = body0->getGravity();
-	btVector3 dir = btVector3(0, 0, 1);
-	dir = lookAtCenter;
-
-
-	// Limit areas
-	if ((boidPos.length()>100.0f) && (btDot(-boidPos.normalized(), boidForward)< 0)) {
-		dir = btVector3(-boidPos.normalized());
-		DrawLine1(boidPos, btVector3(0, 0, 0), btVector3(1, 1, 1));
-
-	}
-	else {
-		dir = btVector3(0, 0, 0);
-		//dir = btVector3(boidForward);
-		DrawLine1(boidPos, btVector3(0, 0, 0), btVector3(0, 0, 0));
-	}
-
-
-
-
-	btTransform btrans(body0->getOrientation());
-	btVector3 top = btrans * btVector3(0, 1, 0);
-	btVector3 front = btrans * btVector3(1, 0, 0);
-	btVector3 right = btrans * btVector3(0, 0, 1);
-	btVector3 dir1 = vel.safeNormalize();
-	btVector3 avel = body0->getAngularVelocity();
-	btVector3 bthrust = 20.0 * front;
-	btVector3 bdrag = -15 * vel;
-	btVector3 blift = -1.00 * gravity * vel.length();
-	//add up vector later
-	//body0->applyTorque(20.0 * front.cross(dir) - 2.0*avel);//forward and dir
-	//body0->applyTorque(10.0 * front.cross(dir) - 6.0*avel);//forward and dir
-	body0->applyTorque(13.0 * front.cross(dir) - 2.0*avel);
-	body0->applyTorque(-6.5 * btVector3(0, 1, 0));//stay up
-	body0->applyTorque(10.5 * top.cross(btVector3(0, 1, 0)) - 10 * avel);//left/right tilt
-
-
-
-	DrawLine1(boidPos, boidPos + front * 15, btVector3(0, 0, 1));
-	DrawLine1(boidPos, boidPos + top * 15, btVector3(0, 1, 0));
-	DrawLine1(boidPos, boidPos + right * 15, btVector3(1, 0, 0));
-
-
-	//limit velocity
-	float velocity = body0->getLinearVelocity().length();
-	if (velocity < 30.0f) {
-		body0->applyCentralForce(bthrust + blift + gravity + bdrag);
-	}
-	else {
-		body0->applyCentralForce(blift + gravity + bdrag);
-	}
-	//--limit vel!
-
-
-
-
-
-
-
-
-
-}
-
 
