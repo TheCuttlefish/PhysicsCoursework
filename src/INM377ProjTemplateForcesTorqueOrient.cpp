@@ -49,6 +49,18 @@ INM377ProjTemplateTorqueOrient::INM377ProjTemplateTorqueOrient()
 }
 
 
+void DrawLine(btVector3 &from, btVector3 &to, btVector3 &c) {
+	glLineWidth(2.0f);
+	glBegin(GL_LINES);
+	glColor3f(c.x(), c.y(), c.z());
+	btglVertex3(from.x(), from.y(), from.z());
+	btglVertex3(to.x(), to.y(), to.z());
+	glEnd();
+
+}
+
+
+
 void INM377ProjTemplateTorqueOrient::clientMoveAndDisplay()
 {
 
@@ -178,8 +190,11 @@ void MyTickCallback(btDynamicsWorld *world, btScalar timeStep) {
 		btVector3 lookAtCenter = -btVector3(body0->getWorldTransform().getOrigin());//negative pos
 		lookAtCenter.normalize();// normalise it
 		btVector3 boidPos = btVector3(body0->getWorldTransform().getOrigin());//boid pos
-		btVector3 boidForward = btVector3(body0->getWorldTransform().getOrigin()) + btVector3(1,0,0);//boid pos
+		btVector3 boidForward = btVector3(body0->getWorldTransform().getOrigin()) * btVector3(1,0,0);//boid pos
+		btVector3 boidUp = btVector3(body0->getWorldTransform().getOrigin()) * btVector3(0, 1, 0);//boid up
+		//body0->getCenterOfMassTransform()
 		boidForward.normalize();//normalised
+
 
 		
 		string example;
@@ -197,33 +212,41 @@ void MyTickCallback(btDynamicsWorld *world, btScalar timeStep) {
 
 
 		// Limit areas
-		if ((boidPos.length()>100.0f) && (btDot(-boidPos.normalized(), boidForward)<0.8)) {
+		if ((boidPos.length()>100.0f) && (btDot(-boidPos.normalized(), boidForward)< 0)) {
 			dir = btVector3(-boidPos.normalized());
+			DrawLine(boidPos, btVector3(0,0,0), btVector3(1, 1, 1));
+			
 		}
 		else {
-			dir = btVector3(boidForward);
+			dir = btVector3(0,0,0);
+			//dir = btVector3(boidForward);
+			DrawLine(boidPos, btVector3(0, 0, 0), btVector3(0, 0, 0));
 		}
 
 
 
 
 		btTransform btrans(body0->getOrientation());
-		btVector3 up(0, 1, 0);
-		btVector3 btop = btrans * up;
+		btVector3 top = btrans * btVector3(0, 1, 0);
 		btVector3 front = btrans * btVector3(1, 0, 0);
+		btVector3 right = btrans * btVector3(0, 0, 1);
 		btVector3 dir1 = vel.safeNormalize();
 		btVector3 avel = body0->getAngularVelocity();
 		btVector3 bthrust = 20.0 * front;
 		btVector3 bdrag = - 15 * vel;
 		btVector3 blift = - 1.00 * gravity * vel.length();
-		
-		body0->applyTorque(10.0 * front.cross(dir) - 6.0*avel);//forward and dir
-		body0->applyTorque(- 6.5 * up);//stay up
-		body0->applyTorque(10.5 * btop.cross(up) - 10*avel);//left/right tilt
+		//add up vector later
+		//body0->applyTorque(20.0 * front.cross(dir) - 2.0*avel);//forward and dir
+		//body0->applyTorque(10.0 * front.cross(dir) - 6.0*avel);//forward and dir
+		body0->applyTorque(13.0 * front.cross(dir) - 2.0*avel);
+		body0->applyTorque(- 6.5 * btVector3(0,1,0));//stay up
+		body0->applyTorque(10.5 * top.cross(btVector3(0, 1, 0)) - 10*avel);//left/right tilt
 
 		
-		
-	
+
+		DrawLine(boidPos, boidPos + front * 10, btVector3(0, 0, 1));
+		DrawLine(boidPos, boidPos + top * 10, btVector3(0, 1, 0));
+		DrawLine(boidPos, boidPos + right * 10, btVector3(1, 0, 0));
 
 
 		//limit velocity
@@ -239,6 +262,9 @@ void MyTickCallback(btDynamicsWorld *world, btScalar timeStep) {
 
 		
 }
+
+
+
 
 
 void	INM377ProjTemplateTorqueOrient::initPhysics()

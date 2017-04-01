@@ -83,7 +83,7 @@ class INM377ProjTemplateTorqueOrient : public PlatformDemoApplication
 
 
 	//my fun
-
+	void DrawLine(btVector3 &from, btVector3 &to, btVector3 &c);
 	
 
 
