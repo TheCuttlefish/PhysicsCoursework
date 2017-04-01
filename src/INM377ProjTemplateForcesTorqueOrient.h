@@ -24,7 +24,6 @@ subject to the following restrictions:
 #endif
 
 #include "LinearMath/btAlignedObjectArray.h"
-
 class btBroadphaseInterface;
 class btCollisionShape;
 class btOverlappingPairCache;
@@ -67,7 +66,6 @@ class INM377ProjTemplateTorqueOrient : public PlatformDemoApplication
 //	btDefaultCollisionConfiguration* m_collisionConfiguration;
 
 	public:
-
 		btRigidBody* body000;
 		btRigidBody* boid;
 		btVector3 worldOrigin = btVector3(0, 0, 0);

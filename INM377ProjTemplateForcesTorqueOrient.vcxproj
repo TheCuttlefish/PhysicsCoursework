@@ -19,10 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Boid.cpp" />
     <ClCompile Include="src\INM377ProjTemplateForcesTorqueOrient.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Boid.h" />
     <ClInclude Include="src\INM377ProjTemplateForcesTorqueOrient.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
