@@ -32,6 +32,9 @@ subject to the following restrictions:
 
 #include <string.h>
 #include <string>
+
+#include "Boid.h"
+#include <vector>
 using namespace std;
 #if 0
 extern btAlignedObjectArray<btVector3> debugContacts;
@@ -40,7 +43,7 @@ extern btAlignedObjectArray<btVector3> debugNormals;
 
 static GLDebugDrawer	sDebugDrawer;
 
-
+vector<Boid> boids;
 INM377ProjTemplateTorqueOrient::INM377ProjTemplateTorqueOrient()
 :m_ccdMode(USE_CCD)
 {
@@ -177,90 +180,9 @@ void INM377ProjTemplateTorqueOrient::displayCallback(void) {
 void MyTickCallback(btDynamicsWorld *world, btScalar timeStep) {
 		world->clearForces();
 
-
-		
-		float worldLimit = 10.0f;
-
-
-
-		btRigidBody* body0 = static_cast<INM377ProjTemplateTorqueOrient *>(world->getWorldUserInfo())->boid;
-
-		//distance
-		float centerDist = body0->getWorldTransform().getOrigin().length();
-		btVector3 lookAtCenter = -btVector3(body0->getWorldTransform().getOrigin());//negative pos
-		lookAtCenter.normalize();// normalise it
-		btVector3 boidPos = btVector3(body0->getWorldTransform().getOrigin());//boid pos
-		btVector3 boidForward = btVector3(body0->getWorldTransform().getOrigin()) * btVector3(1,0,0);//boid pos
-		btVector3 boidUp = btVector3(body0->getWorldTransform().getOrigin()) * btVector3(0, 1, 0);//boid up
-		//body0->getCenterOfMassTransform()
-		boidForward.normalize();//normalised
-
-
-		
-		string example;
-		example = std::to_string(centerDist);
-		printf(example.c_str());
-		printf("\n");
-
-
-
-		btScalar mass = body0->getInvMass();
-		btVector3 vel = body0->getLinearVelocity();
-		btVector3 gravity = body0->getGravity();
-		btVector3 dir = btVector3(0, 0, 1);
-		dir = lookAtCenter;
-
-
-		// Limit areas
-		if ((boidPos.length()>100.0f) && (btDot(-boidPos.normalized(), boidForward)< 0)) {
-			dir = btVector3(-boidPos.normalized());
-			DrawLine(boidPos, btVector3(0,0,0), btVector3(1, 1, 1));
-			
+		for (auto & boid: boids) {
+			boid.Run();
 		}
-		else {
-			dir = btVector3(0,0,0);
-			//dir = btVector3(boidForward);
-			DrawLine(boidPos, btVector3(0, 0, 0), btVector3(0, 0, 0));
-		}
-
-
-
-
-		btTransform btrans(body0->getOrientation());
-		btVector3 top = btrans * btVector3(0, 1, 0);
-		btVector3 front = btrans * btVector3(1, 0, 0);
-		btVector3 right = btrans * btVector3(0, 0, 1);
-		btVector3 dir1 = vel.safeNormalize();
-		btVector3 avel = body0->getAngularVelocity();
-		btVector3 bthrust = 20.0 * front;
-		btVector3 bdrag = - 15 * vel;
-		btVector3 blift = - 1.00 * gravity * vel.length();
-		//add up vector later
-		//body0->applyTorque(20.0 * front.cross(dir) - 2.0*avel);//forward and dir
-		//body0->applyTorque(10.0 * front.cross(dir) - 6.0*avel);//forward and dir
-		body0->applyTorque(13.0 * front.cross(dir) - 2.0*avel);
-		body0->applyTorque(- 6.5 * btVector3(0,1,0));//stay up
-		body0->applyTorque(10.5 * top.cross(btVector3(0, 1, 0)) - 10*avel);//left/right tilt
-
-		
-
-		DrawLine(boidPos, boidPos + front * 10, btVector3(0, 0, 1));
-		DrawLine(boidPos, boidPos + top * 10, btVector3(0, 1, 0));
-		DrawLine(boidPos, boidPos + right * 10, btVector3(1, 0, 0));
-
-
-		//limit velocity
-		float velocity = body0->getLinearVelocity().length();
-		if (velocity < 30.0f) {
-			body0->applyCentralForce(bthrust + blift + gravity + bdrag);
-		}
-		else {
-			body0->applyCentralForce( blift + gravity + bdrag);
-		}
-		//--limit vel!
-		
-
-		
 }
 
 
@@ -327,7 +249,7 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 	}
 
 
-	{
+	for (int i = 0; i < 10; i++) {
 		
 		//boid
 		btConvexHullShape * bShape = new btConvexHullShape();
@@ -350,6 +272,10 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 		boid->setFriction(0.5);
 		//		boid->setLinearVelocity(btVector3(1, 0, 0));
 		boid->activate(true);
+
+		boids.push_back(Boid());
+		boids[i].body0 = boid;
+
 
 	}
 
@@ -430,6 +356,8 @@ void	INM377ProjTemplateTorqueOrient::shootBox(const btVector3& destination)
 void	INM377ProjTemplateTorqueOrient::exitPhysics()
 {
 
+
+	boids.clear(); // clear on exit
 	//cleanup in the reverse order of creation/initialization
 
 	//remove the rigidbodies from the dynamics world and delete them
