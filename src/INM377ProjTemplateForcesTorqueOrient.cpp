@@ -181,7 +181,7 @@ void MyTickCallback(btDynamicsWorld *world, btScalar timeStep) {
 		world->clearForces();
 
 		for (auto & boid: boids) {
-			boid.Run();
+			boid.Run(boids);
 		}
 }
 

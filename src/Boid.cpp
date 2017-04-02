@@ -5,7 +5,7 @@
 
 
 
-void Boid::Run()
+void Boid::Run(std::vector <Boid> &boids)
 {
 
 
@@ -28,7 +28,19 @@ void Boid::Run()
 		body0->applyTorque(10.0 * boid_front.cross(dir) - 6.0*avel);
 		body0->applyTorque(-6.5 * vec.up);//stay up
 		body0->applyTorque(10.5 * boid_top.cross(vec.up) - 10 * avel);//left/right tilt
-		LimitVelocity(MAX_VELOCITY);//apply velocity
+		//LimitVelocity(MAX_VELOCITY);//apply velocity
+
+
+		velocity = body0->getLinearVelocity().length();
+		if (velocity < MAX_VELOCITY) {
+			body0->applyCentralForce(thrust + lift + gravity + drag);
+		}
+		else {
+			body0->applyCentralForce(lift + gravity + drag);
+		}
+
+
+
 	}
 
 	
@@ -43,7 +55,17 @@ void Boid::Run()
 }
 
 
+btVector3 Boid::Alignment() {
+	return vec.zero;
+}
 
+btVector3 Boid::Cohesion() {
+	return vec.zero;
+}
+
+btVector3 Boid::Seperation() {
+	return vec.zero;
+}
 
 void Boid::LimitVelocity(btScalar _limit)
 {
@@ -79,6 +101,7 @@ void Boid::DrawLine1(const btVector3 &from, const btVector3 &to, const btVector3
 	glLineWidth(2.0f);
 	glBegin(GL_LINES);
 	glColor3f(c.x(), c.y(), c.z());
+	//glColor4f(1, 1, 0, .5); - for alpha
 	btglVertex3(from.x(), from.y(), from.z());
 	btglVertex3(to.x(), to.y(), to.z());
 	glEnd();

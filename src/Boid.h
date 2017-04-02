@@ -1,6 +1,6 @@
 #pragma once
 #include "btBulletDynamicsCommon.h"
-
+#include <vector>
 
 class Boid
 {
@@ -8,7 +8,7 @@ class Boid
 public:
 //vars
 	btRigidBody * body0;
-	void Run();
+	void Run(std::vector <Boid> &boids);
 
 
 
@@ -40,7 +40,7 @@ private:
 	btVector3 thrust;
 	btVector3 drag;
 	btVector3 lift;
-
+	btScalar velocity;
 
 	btVector3 dir;
 
@@ -53,6 +53,10 @@ private:
 	void DrawLine1(const btVector3 &from, const btVector3 &to, const btVector3 &c);
 	
 
+	//flocking logic
+	btVector3 Alignment();//steer towards the average heading of local flockmates
+	btVector3 Cohesion();//steer to move toward the average position (center of mass) of local flockmates
+	btVector3 Seperation();//steer to avoid crowding local flockmates
 
 //my colours
 	struct Colour {
@@ -61,6 +65,10 @@ private:
 		const btVector3 blue = btVector3(0, 0, 1);
 		const btVector3 black = btVector3(0, 0, 0);
 		const btVector3 white = btVector3(1, 1, 1);
+		//extra
+		const btVector3 orange = btVector3(1, .2, 0);
+		const btVector3 yellow = btVector3(1, .8, 0);
+	
 	} colour;
 
 //basic vectors
