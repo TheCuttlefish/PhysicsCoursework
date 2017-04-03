@@ -22,7 +22,7 @@ public:
 private:
 	
 	const btScalar MAX_VELOCITY = 30;
-	const btScalar MAX_DISTANCE = 100;
+	const btScalar MAX_DISTANCE = 60;//100
 	const btScalar THRUST_FORCE= 20;
 
 	//boid vectors
@@ -54,7 +54,7 @@ private:
 	
 
 	//flocking logic
-	btVector3 Alignment();//steer towards the average heading of local flockmates
+	btVector3 Alignment(std::vector <Boid> &boids);//steer towards the average heading of local flockmates
 	btVector3 Cohesion();//steer to move toward the average position (center of mass) of local flockmates
 	btVector3 Seperation();//steer to avoid crowding local flockmates
 

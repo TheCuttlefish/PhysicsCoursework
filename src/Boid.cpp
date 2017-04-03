@@ -8,7 +8,7 @@
 void Boid::Run(std::vector <Boid> &boids)
 {
 
-
+	
 	//main physics
 	{
 		position = btVector3(body0->getWorldTransform().getOrigin());//boid pos
@@ -25,7 +25,8 @@ void Boid::Run(std::vector <Boid> &boids)
 		boid_top = trans * vec.up;
 		boid_right = trans * vec.right;
 		//add forces
-		body0->applyTorque(10.0 * boid_front.cross(dir) - 6.0*avel);
+		body0->applyTorque(10.0 * boid_front.cross(dir + Alignment(boids)) - 6.0*avel);
+		//body0->applyTorque(10.0 * boid_front.cross(dir) - 6.0*avel);
 		body0->applyTorque(-6.5 * vec.up);//stay up
 		body0->applyTorque(10.5 * boid_top.cross(vec.up) - 10 * avel);//left/right tilt
 		//LimitVelocity(MAX_VELOCITY);//apply velocity
@@ -38,8 +39,6 @@ void Boid::Run(std::vector <Boid> &boids)
 		else {
 			body0->applyCentralForce(lift + gravity + drag);
 		}
-
-
 
 	}
 
@@ -55,8 +54,39 @@ void Boid::Run(std::vector <Boid> &boids)
 }
 
 
-btVector3 Boid::Alignment() {
-	return vec.zero;
+btVector3 Boid::Alignment(std::vector <Boid> &boids) {
+	btVector3 aVec = btVector3(0,0,0);
+	
+	for (auto & boid : boids) {
+		//can see
+		if (boid.body0 == body0) {
+
+		} else {
+			btScalar dist = btDistance(boid.position, position);
+			//can see
+			if(dist<30){
+				if (btDot(boid_front, boid.position - position)<0) {
+					DrawLine1(position, boid.position, colour.green);
+					aVec = aVec + btTransform(boid.body0->getOrientation())*vec.forward;
+					aVec = aVec.safeNormalize();
+				}
+			}
+			
+		}
+
+		
+	}
+	
+	
+	
+	if (aVec.length() > .1) {
+		DrawLine1(position, position + aVec * 30, colour.black);
+	}
+	else {
+		DrawLine1(position, position + aVec * 30, colour.red);
+	}
+
+	return aVec;
 }
 
 btVector3 Boid::Cohesion() {
@@ -81,13 +111,14 @@ void Boid::LimitVelocity(btScalar _limit)
 void Boid::RadialLimit(btScalar _limit)
 {
 	if ((position.length()>_limit) && (btDot(-position.normalized(), boid_front)< 0.5)) {
-		dir = btVector3(-position.normalized());
-		DrawLine1(position, vec.zero, colour.white);
+		dir = btVector3(-position.normalized()) ;
+
+		//DrawLine1(position, vec.zero, colour.white);
 
 	}
 	else {
 		dir = vec.zero;
-		DrawLine1(position, vec.zero, colour.black);
+		//DrawLine1(position, vec.zero, colour.black);
 	}
 }
 
@@ -101,7 +132,6 @@ void Boid::DrawLine1(const btVector3 &from, const btVector3 &to, const btVector3
 	glLineWidth(2.0f);
 	glBegin(GL_LINES);
 	glColor3f(c.x(), c.y(), c.z());
-	//glColor4f(1, 1, 0, .5); - for alpha
 	btglVertex3(from.x(), from.y(), from.z());
 	btglVertex3(to.x(), to.y(), to.z());
 	glEnd();
