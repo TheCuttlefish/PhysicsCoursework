@@ -55,8 +55,8 @@ private:
 
 	//flocking logic
 	btVector3 Alignment(std::vector <Boid> &boids);//steer towards the average heading of local flockmates
-	btVector3 Cohesion();//steer to move toward the average position (center of mass) of local flockmates
-	btVector3 Seperation();//steer to avoid crowding local flockmates
+	btVector3 Cohesion(std::vector <Boid> &boids);//steer to move toward the average position (center of mass) of local flockmates
+	btVector3 Seperation(std::vector <Boid> &boids);//steer to avoid crowding local flockmates
 
 //my colours
 	struct Colour {

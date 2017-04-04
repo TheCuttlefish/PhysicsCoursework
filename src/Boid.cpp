@@ -25,12 +25,14 @@ void Boid::Run(std::vector <Boid> &boids)
 		boid_top = trans * vec.up;
 		boid_right = trans * vec.right;
 		//add forces
-		body0->applyTorque(10.0 * boid_front.cross(dir + Alignment(boids)) - 6.0*avel);
+		body0->applyTorque(10.0 * boid_front.cross(dir + Alignment(boids) ) - 6.0*avel);
 		//body0->applyTorque(10.0 * boid_front.cross(dir) - 6.0*avel);
 		body0->applyTorque(-6.5 * vec.up);//stay up
 		body0->applyTorque(10.5 * boid_top.cross(vec.up) - 10 * avel);//left/right tilt
 		//LimitVelocity(MAX_VELOCITY);//apply velocity
 
+		
+		Cohesion(boids);
 
 		velocity = body0->getLinearVelocity().length();
 		if (velocity < MAX_VELOCITY) {
@@ -44,7 +46,9 @@ void Boid::Run(std::vector <Boid> &boids)
 
 	
 	RadialLimit(MAX_DISTANCE);
+	//
 
+	//
 
 	DrawLine1(position, position + boid_front * 15, colour.blue);
 	DrawLine1(position, position + boid_top * 15, colour.green);
@@ -65,7 +69,7 @@ btVector3 Boid::Alignment(std::vector <Boid> &boids) {
 			btScalar dist = btDistance(boid.position, position);
 			//can see
 			if(dist<30){
-				if (btDot(boid_front, boid.position - position)<0) {
+				if (btDot(boid_front, boid.position - position)<0) {//in front
 					DrawLine1(position, boid.position, colour.green);
 					aVec = aVec + btTransform(boid.body0->getOrientation())*vec.forward;
 					aVec = aVec.safeNormalize();
@@ -89,12 +93,41 @@ btVector3 Boid::Alignment(std::vector <Boid> &boids) {
 	return aVec;
 }
 
-btVector3 Boid::Cohesion() {
-	return vec.zero;
+btVector3 Boid::Cohesion(std::vector <Boid> &boids) {
+	btVector3 cVec = vec.zero;
+	
+	for (auto & boid : boids) {
+		//can see
+		if (boid.body0 == body0) {
+
+		}
+		else {
+			btScalar dist = btDistance(boid.position, position);
+			//can see
+			if (dist<50) {//30
+				if (btDot(boid_front, boid.position - position)>0) {//in front
+					//Cohesion
+					cVec = cVec + btTransform(boid.body0->getOrientation())*vec.forward;
+					DrawLine1(position, position+cVec.safeNormalize()*50, colour.orange);
+				}
+			}
+		}
+
+
+	}
+
+	//get the average position
+	
+	cVec = cVec.safeNormalize();
+	
+
+	body0->applyTorque(cVec*5);//????
+	return cVec;
 }
 
-btVector3 Boid::Seperation() {
-	return vec.zero;
+btVector3 Boid::Seperation(std::vector <Boid> &boids) {
+	btVector3 sVec = vec.zero;
+	return sVec;
 }
 
 void Boid::LimitVelocity(btScalar _limit)
@@ -109,7 +142,8 @@ void Boid::LimitVelocity(btScalar _limit)
 }
 
 void Boid::RadialLimit(btScalar _limit)
-{
+{	
+	//in the radius
 	if ((position.length()>_limit) && (btDot(-position.normalized(), boid_front)< 0.5)) {
 		dir = btVector3(-position.normalized()) ;
 
