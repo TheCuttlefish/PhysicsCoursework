@@ -25,6 +25,16 @@ private:
 	const btScalar MAX_DISTANCE = 60;//100
 	const btScalar THRUST_FORCE= 20;//20
 
+	//visibility of 3 rules
+	const btScalar MAX_ALIGHNMENT_VISIBILITY = 30;
+	const btScalar MAX_COHESION_VISIBILITY = 30;
+	const btScalar MAX_SEPARATION_VISIBILITY = 30;
+
+	//strenght of 3 rules
+	const btScalar PHYSICS_STRENGTH = 3;
+	const btScalar ALIGNMENT_STRENGHT = 2;
+	const btScalar COHESION_STRENGHT = 1;
+	const btScalar SEPARATION_STRENGHT = 1;//not used
 	//boid vectors
 	btVector3 boid_front;
 	btVector3 boid_top;
@@ -56,7 +66,7 @@ private:
 	//flocking logic
 	btVector3 Alignment(std::vector <Boid> &boids);//steer towards the average heading of local flockmates
 	btVector3 Cohesion(std::vector <Boid> &boids);//steer to move toward the average position (center of mass) of local flockmates
-	btVector3 Seperation(std::vector <Boid> &boids);//steer to avoid crowding local flockmates
+	btVector3 Separation(std::vector <Boid> &boids);//steer to avoid crowding local flockmates
 
 //my colours
 	struct Colour {
