@@ -2,6 +2,13 @@
 #include "btBulletDynamicsCommon.h"
 #include <vector>
 
+
+
+#include <stdio.h> //printf debugging
+#include <string.h>
+#include <string>
+
+
 class Boid
 {
 
@@ -14,7 +21,7 @@ public:
 
 	//not important
 	bool drawGizmos = true;
-
+	bool windForce = false;
 	
 
 
@@ -22,7 +29,7 @@ public:
 private:
 	
 	const btScalar MAX_VELOCITY = 30;//30
-	const btScalar MAX_DISTANCE = 60;//100
+	const btScalar MAX_DISTANCE = 50;//100
 	const btScalar THRUST_FORCE= 20;//20
 
 	//visibility of 3 rules
@@ -31,8 +38,8 @@ private:
 	const btScalar MAX_SEPARATION_VISIBILITY = 30;
 
 	//strenght of 3 rules
-	const btScalar PHYSICS_STRENGTH = 3;
-	const btScalar ALIGNMENT_STRENGHT = 2;
+	const btScalar PHYSICS_STRENGTH = 1.5;
+	const btScalar ALIGNMENT_STRENGHT = 1;
 	const btScalar COHESION_STRENGHT = 1;
 	const btScalar SEPARATION_STRENGHT = 1;//not used
 	//boid vectors

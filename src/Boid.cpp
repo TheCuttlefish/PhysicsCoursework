@@ -2,7 +2,13 @@
 #include "GlutStuff.h"
 
 
+#include <stdio.h> //printf debugging
+#include <string.h>
+#include <string>
 
+
+
+using namespace std;
 
 
 void Boid::Run(std::vector <Boid> &boids)
@@ -33,6 +39,14 @@ void Boid::Run(std::vector <Boid> &boids)
 		//LimitVelocity(MAX_VELOCITY);//apply velocity
 
 		Cohesion(boids);
+		Separation(boids);
+
+
+		if (windForce) {
+			body0->applyCentralForce(btVector3(2, 0, 0));
+		}
+
+
 
 		velocity = body0->getLinearVelocity().length();
 		if (velocity < MAX_VELOCITY) {
@@ -47,12 +61,14 @@ void Boid::Run(std::vector <Boid> &boids)
 
 	RadialLimit(MAX_DISTANCE);
 	//
-
+	
 	//
 
-	DrawLine1(position, position + boid_front * 15, colour.blue);
-	DrawLine1(position, position + boid_top * 15, colour.green);
-	DrawLine1(position, position + boid_right * 15, colour.red);
+
+	//draw axes
+	//DrawLine1(position, position + boid_front * 15, colour.blue);
+	//DrawLine1(position, position + boid_top * 15, colour.green);
+	//DrawLine1(position, position + boid_right * 15, colour.red);
 
 
 }
@@ -60,6 +76,11 @@ void Boid::Run(std::vector <Boid> &boids)
 
 btVector3 Boid::Alignment(std::vector <Boid> &boids) {
 	btVector3 aVec = btVector3(0,0,0);
+
+
+	
+
+
 
 	for (auto & boid : boids) {
 		//can see
@@ -69,7 +90,15 @@ btVector3 Boid::Alignment(std::vector <Boid> &boids) {
 			btScalar dist = btDistance(boid.position, position);
 			//can see
 			if(dist<MAX_ALIGHNMENT_VISIBILITY){//50
-				if (btDot(boid_front, boid.position - position)<0) {//in front
+
+
+				string example;
+				example = to_string(boid_front.x());
+				//printf(example.c_str());
+				//printf("\n");
+
+
+				if (btDot(boid_front, boid.position - position)<0) {//in fron
 					DrawLine1(position, boid.position, colour.green);
 					aVec = aVec + btTransform(boid.body0->getOrientation())*vec.forward;
 					aVec = aVec.safeNormalize();
@@ -109,10 +138,13 @@ btVector3 Boid::Cohesion(std::vector <Boid> &boids) {
 			btScalar dist = btDistance(boid.position, position);
 			//can see
 			if (dist<MAX_COHESION_VISIBILITY) {//30
-				if (btDot(boid_front, boid.position - position)>0) {//in front
+
+
+
+
+				if (btDot(boid_front, boid.position - position)<0) {//in front
 					//Cohesion
 					cVec = cVec + boid.position;
-					DrawLine1(position, position+cVec.safeNormalize()*50, colour.orange);
 				}
 			}
 		}
@@ -142,17 +174,17 @@ btVector3 Boid::Separation(std::vector <Boid> &boids) {
 			btScalar dist = btDistance(boid.position, position);
 			//can see
 			if (dist<MAX_SEPARATION_VISIBILITY) {//30
-				if (btDot(boid_front, boid.position - position)>0) {//in front
+				if (btDot(boid_front, boid.position - position)<0) {//in front
 					//Cohesion
 					//sVec = sVec + btTransform(boid.body0->getOrientation())*vec.forward;
-					//DrawLine1(position, position+sVec.safeNormalize()*50, colour.orange);
-
+					
 				
-						sVec = sVec + btTransform(boid.body0->getOrientation())*vec.forward;
-						sVec.safeNormalize();
+						sVec = sVec + position - boid.position;
+						
 						//lift = lift*95;
-
-					//	thrust = thrust * 0.97;
+						if (dist < 10) {
+							//thrust = thrust * 0.9;
+						}
 						//body0->applyCentralForce(-boid_front * 10);
 
 					
@@ -164,9 +196,12 @@ btVector3 Boid::Separation(std::vector <Boid> &boids) {
 
 	}
 
+	sVec.safeNormalize();
+	DrawLine1(position, position+ sVec*10, colour.orange);
 
-
-	return -sVec*SEPARATION_STRENGHT;
+	sVec *= -1;
+	body0->applyCentralForce(sVec*SEPARATION_STRENGHT);
+	return sVec;
 }
 
 void Boid::LimitVelocity(btScalar _limit)
@@ -183,7 +218,7 @@ void Boid::LimitVelocity(btScalar _limit)
 void Boid::RadialLimit(btScalar _limit)
 {
 	//in the radius //-----------------------------------------------------0.9 circle and -.9 flocking no order - good
-	if ((position.length()>_limit) && (btDot(-position.normalized(), boid_front)< 0.7)) {//0.5
+	if ((position.length()>_limit) && (btDot(-position.normalized(), boid_front)< 0.9)) {//0.5
 		dir = btVector3(-position.normalized()) ;
 
 		//DrawLine1(position, vec.zero, colour.white);
@@ -202,7 +237,7 @@ void Boid::DrawLine1(const btVector3 &from, const btVector3 &to, const btVector3
 
 	if (!drawGizmos)return;
 
-	glLineWidth(2.0f);
+	glLineWidth(0.1f);
 	glBegin(GL_LINES);
 	glColor3f(c.x(), c.y(), c.z());
 	btglVertex3(from.x(), from.y(), from.z());

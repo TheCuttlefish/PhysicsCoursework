@@ -262,7 +262,7 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 		btTransform btrans;
 		btrans.setIdentity();
 //		btCollisionShape* bshape = m_collisionShapes[3];
-		btVector3 bpos(10, 5, 0);
+		btVector3 bpos(2*i,1*i, 2 * (i % 10));
 		btrans.setOrigin(bpos);
 		btScalar bmass(1.0f);
 		btVector3 bLocalInertia;
@@ -296,6 +296,14 @@ void INM377ProjTemplateTorqueOrient::keyboardCallback(unsigned char key, int x, 
 
 		for (auto & boid : boids) {
 			boid.drawGizmos =! boid.drawGizmos;
+		}
+	}
+
+	if (key == '2') {
+
+
+		for (auto & boid : boids) {
+			boid.windForce = !boid.windForce;
 		}
 	}
 
