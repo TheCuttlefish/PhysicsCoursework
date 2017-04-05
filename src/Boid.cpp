@@ -25,7 +25,7 @@ void Boid::Run(std::vector <Boid> &boids)
 		boid_top = trans * vec.up;
 		boid_right = trans * vec.right;
 		//add forces
-		body0->applyTorque(10.0 * boid_front.cross(dir + Alignment(boids) ) - 6.0*avel);
+		body0->applyTorque(10.0 * boid_front.cross(dir*1.1 + Alignment(boids) ) - 6.0*avel);
 		//body0->applyTorque(10.0 * boid_front.cross(dir) - 6.0*avel);
 		body0->applyTorque(-6.5 * vec.up);//stay up
 		body0->applyTorque(10.5 * boid_top.cross(vec.up) - 10 * avel);//left/right tilt
@@ -68,7 +68,7 @@ btVector3 Boid::Alignment(std::vector <Boid> &boids) {
 		} else {
 			btScalar dist = btDistance(boid.position, position);
 			//can see
-			if(dist<30){
+			if(dist<20){//50
 				if (btDot(boid_front, boid.position - position)<0) {//in front
 					DrawLine1(position, boid.position, colour.green);
 					aVec = aVec + btTransform(boid.body0->getOrientation())*vec.forward;
@@ -90,7 +90,7 @@ btVector3 Boid::Alignment(std::vector <Boid> &boids) {
 		DrawLine1(position, position + aVec * 30, colour.red);
 	}
 
-	return aVec;
+	return aVec*1;// *1
 }
 
 btVector3 Boid::Cohesion(std::vector <Boid> &boids) {
@@ -104,11 +104,19 @@ btVector3 Boid::Cohesion(std::vector <Boid> &boids) {
 		else {
 			btScalar dist = btDistance(boid.position, position);
 			//can see
-			if (dist<50) {//30
+			if (dist<20) {//30
 				if (btDot(boid_front, boid.position - position)>0) {//in front
 					//Cohesion
 					cVec = cVec + btTransform(boid.body0->getOrientation())*vec.forward;
 					DrawLine1(position, position+cVec.safeNormalize()*50, colour.orange);
+				
+					if (dist < 15) {
+						//cVec = -dir*10;
+						//lift = lift*95;
+						thrust = thrust * 0.95;
+						
+					}
+				
 				}
 			}
 		}
@@ -121,7 +129,8 @@ btVector3 Boid::Cohesion(std::vector <Boid> &boids) {
 	cVec = cVec.safeNormalize();
 	
 
-	body0->applyTorque(cVec*5);//????
+	body0->applyTorque(cVec*1);//????5
+	//10 is good
 	return cVec;
 }
 
@@ -143,8 +152,8 @@ void Boid::LimitVelocity(btScalar _limit)
 
 void Boid::RadialLimit(btScalar _limit)
 {	
-	//in the radius
-	if ((position.length()>_limit) && (btDot(-position.normalized(), boid_front)< 0.5)) {
+	//in the radius //-----------------------------------------------------0.9 circle and -.9 flocking no order - good
+	if ((position.length()>_limit) && (btDot(-position.normalized(), boid_front)< 0.7)) {//0.5
 		dir = btVector3(-position.normalized()) ;
 
 		//DrawLine1(position, vec.zero, colour.white);

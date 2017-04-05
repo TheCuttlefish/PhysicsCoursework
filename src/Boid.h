@@ -21,9 +21,9 @@ public:
 //my methods
 private:
 	
-	const btScalar MAX_VELOCITY = 30;
+	const btScalar MAX_VELOCITY = 30;//30
 	const btScalar MAX_DISTANCE = 60;//100
-	const btScalar THRUST_FORCE= 20;
+	const btScalar THRUST_FORCE= 20;//20
 
 	//boid vectors
 	btVector3 boid_front;
