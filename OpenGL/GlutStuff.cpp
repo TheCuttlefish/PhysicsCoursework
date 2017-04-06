@@ -4,8 +4,8 @@ Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
-Permission is granted to anyone to use this software for any purpose, 
-including commercial applications, and to alter it and redistribute it freely, 
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it freely,
 subject to the following restrictions:
 
 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
@@ -73,10 +73,11 @@ static void glutDisplayCallback(void)
 
 
 int glutmain(int argc, char **argv,int width,int height,const char* title,DemoApplication* demoApp) {
-    
+
 	gDemoApplication = demoApp;
 
 	glutInit(&argc, argv);
+	
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL);
     glutInitWindowPosition(width/2, height/2);
     glutInitWindowSize(width, height);
@@ -111,7 +112,7 @@ CGLSetParameter(cgl_context, kCGLCPSwapInterval, &swap_interval);
 #endif
 
 
-	
+
     glutMainLoop();
     return 0;
 }

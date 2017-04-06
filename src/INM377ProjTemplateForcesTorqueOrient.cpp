@@ -44,6 +44,8 @@ extern btAlignedObjectArray<btVector3> debugNormals;
 static GLDebugDrawer	sDebugDrawer;
 
 vector<Boid> boids;
+btScalar groundLevel = -50;
+
 INM377ProjTemplateTorqueOrient::INM377ProjTemplateTorqueOrient()
 :m_ccdMode(USE_CCD)
 {
@@ -53,6 +55,7 @@ INM377ProjTemplateTorqueOrient::INM377ProjTemplateTorqueOrient()
 
 
 void DrawLine(btVector3 &from, btVector3 &to, btVector3 &c) {
+	
 	glLineWidth(2.0f);
 	glBegin(GL_LINES);
 	glColor3f(c.x(), c.y(), c.z());
@@ -67,9 +70,10 @@ void DrawLine(btVector3 &from, btVector3 &to, btVector3 &c) {
 void INM377ProjTemplateTorqueOrient::clientMoveAndDisplay()
 {
 
+	glEnable(GLUT_MULTISAMPLE);//multisamping
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GLUT_MULTISAMPLE);//multisamping
 	
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
-
 	//simple dynamics world doesn't handle fixed-time-stepping
 	float ms = getDeltaTimeMicroseconds();
 	
@@ -94,7 +98,7 @@ void INM377ProjTemplateTorqueOrient::clientMoveAndDisplay()
 	glFlush();
 
 	swapBuffers();
-
+	
 }
 
 
@@ -155,6 +159,8 @@ void INM377ProjTemplateTorqueOrient::displayText()
 void INM377ProjTemplateTorqueOrient::displayCallback(void) {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
+	glEnable(GLUT_MULTISAMPLE);//MSAA
+	
 	
 	renderme();
 
@@ -179,7 +185,7 @@ void INM377ProjTemplateTorqueOrient::displayCallback(void) {
 
 void MyTickCallback(btDynamicsWorld *world, btScalar timeStep) {
 		world->clearForces();
-
+		
 		for (auto & boid: boids) {
 			boid.Run(boids);
 		}
@@ -212,7 +218,7 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 	
 
 	///create a few basic rigid bodies
-	btBoxShape* box = new btBoxShape(btVector3(btScalar(110.),btScalar(1.),btScalar(110.)));
+	btBoxShape* box = new btBoxShape(btVector3(btScalar(510.),btScalar(1.),btScalar(510.)));
 //	box->initializePolyhedralFeatures();
 	btCollisionShape* groundShape = box;
 
@@ -224,7 +230,7 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 
 	btTransform groundTransform;
 	groundTransform.setIdentity();
-	groundTransform.setOrigin(btVector3(0,-200,0));
+	groundTransform.setOrigin(btVector3(0, groundLevel,0));
 
 	//We can also use DemoApplication::localCreateRigidBody, but for clarity it is provided here:
 	{
@@ -262,7 +268,7 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 		btTransform btrans;
 		btrans.setIdentity();
 //		btCollisionShape* bshape = m_collisionShapes[3];
-		btVector3 bpos(2*i,10+1*i, 2 * (i % 10));
+		btVector3 bpos(2*i,10, 2 * (i % 10));
 		btrans.setOrigin(bpos);
 		btScalar bmass(1.0f);
 		btVector3 bLocalInertia;
@@ -278,6 +284,31 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 
 
 	}
+
+
+	btScalar cHeight = 100;
+	//obstacles
+	btCollisionShape* cylinder = new btCylinderShape(btVector3(4, cHeight, 4));
+	m_collisionShapes.push_back(cylinder);
+
+	btRigidBody* cBody = NULL;
+	btTransform cTrans;
+	cTrans.setIdentity();
+	cTrans.setOrigin(btVector3(100, cHeight + groundLevel, 100));
+	btScalar cMass = 1000;
+	btVector3 cLocalInertia;
+	cylinder->calculateLocalInertia(cMass, cLocalInertia);
+
+	btMotionState* motionState = NULL;
+	cBody = new btRigidBody(cMass, motionState, cylinder, cLocalInertia);
+
+
+
+	cBody = localCreateRigidBody(cMass, cTrans, cylinder);
+
+	cBody->setAnisotropicFriction(cylinder->getAnisotropicRollingFrictionDirection(), btCollisionObject::CF_ANISOTROPIC_ROLLING_FRICTION);
+	cBody->setFriction(0.5);
+	cBody->activate(true);
 
 }
 

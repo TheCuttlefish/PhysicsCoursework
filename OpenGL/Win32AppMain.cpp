@@ -5,8 +5,8 @@ Copyright (c) 2003-2010 Erwin Coumans  http://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
-Permission is granted to anyone to use this software for any purpose, 
-including commercial applications, and to alter it and redistribute it freely, 
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it freely,
 subject to the following restrictions:
 
 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
@@ -26,7 +26,7 @@ subject to the following restrictions:
 
 #include "BulletDynamics/Dynamics/btDynamicsWorld.h"
 
-/// This Win32AppMain is shared code between all demos. 
+/// This Win32AppMain is shared code between all demos.
 /// The actual demo, derived from DemoApplication is created using 'createDemo', in a separate .cpp file
 DemoApplication* gDemoApplication = 0;
 DemoApplication*	createDemo();
@@ -91,7 +91,7 @@ bool initCL( void* glCtx, void* glDC )
 		return false;
 
     g_cdDevice =  btOpenCLUtils::getDevice(g_cxMainContext,0);
-    
+
     btOpenCLDeviceInfo clInfo;
 	btOpenCLUtils::getDeviceInfo(g_cdDevice,clInfo);
 	btOpenCLUtils::printDeviceInfo(g_cdDevice);
@@ -107,7 +107,7 @@ bool initCL( void* glCtx, void* glDC )
 
 
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				   LPSTR lpCmdLine, int iCmdShow)
 {
 	WNDCLASS wc;
@@ -117,11 +117,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	MSG msg;
 	BOOL quit = FALSE;
 	float theta = 0.0f;
-	
+
 	gDemoApplication = createDemo();
 
 #ifdef USE_AMD_OPENCL
-	
+
 	bool initialized = initCL(0,0);
 	btAssert(initialized);
 #endif //USE_AMD_OPENCL
@@ -138,86 +138,86 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	wc.lpszMenuName = NULL;
 	wc.lpszClassName = "BulletPhysics";
 	RegisterClass( &wc );
-	
+
 	// create main window
-	hWnd = CreateWindow( 
-		"BulletPhysics", "Bullet Physics Sample. http://bulletphysics.org", 
+	hWnd = CreateWindow(
+		"BulletPhysics", "Bullet Physics Sample. http://bulletphysics.org",
 		WS_CAPTION | WS_VISIBLE | WS_OVERLAPPEDWINDOW,
 //		0, 0, 640, 480,
 		0, 0, 1024, 768,
 		NULL, NULL, hInstance, NULL );
-	
+
 	// enable OpenGL for the window
 	EnableOpenGL( hWnd, &hDC, &hRC );
-	
-	
+
+
 	GLDebugDrawer debugDraw;
 	gDemoApplication->myinit();
 	//gDemoApplication->reshape(1024, 768);
 	gDemoApplication->initPhysics();
 	if (gDemoApplication->getDynamicsWorld())
 		gDemoApplication->getDynamicsWorld()->setDebugDrawer(&debugDraw);
-	
+
 	gDemoApplication->reshape(sWidth,sHeight);
 
 	// program main loop
 	while ( !quit )
 	{
-		
+
 		// check for messages
 		if ( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE )  )
 		{
-			
+
 			// handle or dispatch messages
-			if ( msg.message == WM_QUIT ) 
+			if ( msg.message == WM_QUIT )
 			{
 				quit = TRUE;
-			} 
-			else 
+			}
+			else
 			{
 				TranslateMessage( &msg );
 				DispatchMessage( &msg );
 			}
-			
+
 //			gDemoApplication->displayCallback();
-			
+
 
 		};
-		
+
 		// OpenGL animation code goes here
-		
+
 		glClearColor( .7f, 0.7f, 0.7f, 1.f );
-		
+
 		gDemoApplication->moveAndDisplay();
 
 
 		SwapBuffers( hDC );
-		
+
 		theta += 1.0f;
-	
-		
+
+
 	}
-	
+
 
 
 	// shutdown OpenGL
 	DisableOpenGL( hWnd, hDC, hRC );
-	
+
 	// destroy the window explicitly
 	DestroyWindow( hWnd );
 
 	delete gDemoApplication;
 
 	return msg.wParam;
-	
+
 }
 
 // Window Procedure
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	
-	
+
+
 
 	switch (message)
 	{
@@ -239,11 +239,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				gDemoApplication->m_modifierKeys = 0;
 			}
-			
+
 			break;
 		}
 
-		
+
 		case WM_SIZE:													// Size Action Has Taken Place
 
 			switch (wParam)												// Evaluate Size Action
@@ -269,30 +269,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					}
 				return 0;												// Return
 			}
-		break;	
+		break;
 
 	case WM_CREATE:
 		return 0;
-	
+
 	case WM_MBUTTONUP:
 	{
-			int xPos = LOWORD(lParam); 
-			int yPos = HIWORD(lParam); 
+			int xPos = LOWORD(lParam);
+			int yPos = HIWORD(lParam);
 			gDemoApplication->mouseFunc(1,1,xPos,yPos);
 		break;
 	}
 	case WM_MBUTTONDOWN:
 	{
-			int xPos = LOWORD(lParam); 
-			int yPos = HIWORD(lParam); 
+			int xPos = LOWORD(lParam);
+			int yPos = HIWORD(lParam);
 			gDemoApplication->mouseFunc(1,0,xPos,yPos);
 		break;
 	}
 
 	case WM_LBUTTONUP:
 	{
-			int xPos = LOWORD(lParam); 
-			int yPos = HIWORD(lParam); 
+			int xPos = LOWORD(lParam);
+			int yPos = HIWORD(lParam);
 			gDemoApplication->mouseFunc(0,1,xPos,yPos);
 		break;
 	}
@@ -300,8 +300,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 
 		int  zDelta = (short)HIWORD(wParam);
-		int xPos = LOWORD(lParam); 
-		int yPos = HIWORD(lParam); 
+		int xPos = LOWORD(lParam);
+		int yPos = HIWORD(lParam);
 		if (zDelta>0)
 			gDemoApplication->zoomIn();
 		else
@@ -311,29 +311,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_MOUSEMOVE:
 		{
-				int xPos = LOWORD(lParam); 
-				int yPos = HIWORD(lParam); 
+				int xPos = LOWORD(lParam);
+				int yPos = HIWORD(lParam);
 				gDemoApplication->mouseMotionFunc(xPos,yPos);
 			break;
 		}
 	case WM_RBUTTONUP:
 	{
-			int xPos = LOWORD(lParam); 
-			int yPos = HIWORD(lParam); 
+			int xPos = LOWORD(lParam);
+			int yPos = HIWORD(lParam);
 			gDemoApplication->mouseFunc(2,1,xPos,yPos);
 		break;
 	}
 	case WM_RBUTTONDOWN:
 	{
-			int xPos = LOWORD(lParam); 
-			int yPos = HIWORD(lParam); 
+			int xPos = LOWORD(lParam);
+			int yPos = HIWORD(lParam);
 			gDemoApplication->mouseFunc(2,0,xPos,yPos);
 		break;
 	}
 	case WM_LBUTTONDOWN:
 		{
-				int xPos = LOWORD(lParam); 
-				int yPos = HIWORD(lParam); 
+				int xPos = LOWORD(lParam);
+				int yPos = HIWORD(lParam);
 				gDemoApplication->mouseFunc(0,0,xPos,yPos);
 			break;
 		}
@@ -352,14 +352,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_CLOSE:
 		PostQuitMessage( 0 );
 		return 0;
-		
+
 	case WM_DESTROY:
 		return 0;
-		
+
 	case WM_KEYUP:
 		switch ( wParam )
 		{
-			
+
 		case VK_PRIOR:
 		case VK_NEXT:
 		case VK_END:
@@ -412,32 +412,59 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				PostQuitMessage(0);
 			}
 			return 0;
-			
+
 		}
 		return 0;
-		
+
 	case WM_CHAR:
 		if (!quitRequest)
 			gDemoApplication->keyboardCallback(wParam,0,0);
 		break;
-	
+
 	default:
 		return DefWindowProc( hWnd, message, wParam, lParam );
-			
+
 	}
 	return 0;
 }
 
-// Enable OpenGL
 
+
+//MSAA function
+void enableMultisample(int msaa)
+{
+    if (msaa)
+    {
+        glEnable(GL_MULTISAMPLE);
+        glHint(GL_MULTISAMPLE_FILTER_HINT_NV, GL_NICEST);
+
+        // detect current settings
+        GLint iMultiSample = 2;
+        GLint iNumSamples = 8;//8
+        glGetIntegerv(GL_SAMPLE_BUFFERS, &iMultiSample);
+        glGetIntegerv(GL_SAMPLES, &iNumSamples);
+        printf("MSAA on, GL_SAMPLE_BUFFERS = %d, GL_SAMPLES = %d\n", iMultiSample, iNumSamples);
+    }
+    else
+    {
+        glDisable(GL_MULTISAMPLE);
+        printf("MSAA off\n");
+    }
+}
+
+
+
+
+
+// Enable OpenGL
 void EnableOpenGL(HWND hWnd, HDC * hDC, HGLRC * hRC)
 {
 	PIXELFORMATDESCRIPTOR pfd;
 	int format;
-	
+
 	// get the device context (DC)
 	*hDC = GetDC( hWnd );
-	
+
 	// set the pixel format for the DC
 	ZeroMemory( &pfd, sizeof( pfd ) );
 	pfd.nSize = sizeof( pfd );
@@ -448,16 +475,27 @@ void EnableOpenGL(HWND hWnd, HDC * hDC, HGLRC * hRC)
 	pfd.cDepthBits = 16;
 	pfd.cStencilBits = 1;
 	pfd.iLayerType = PFD_MAIN_PLANE;
+
+
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_MULTISAMPLE);
+
+	//MSAA
+	glutSetOption(GLUT_MULTISAMPLE, 8);//8
+	enableMultisample(1);
+
+
 	format = ChoosePixelFormat( *hDC, &pfd );
 	SetPixelFormat( *hDC, format, &pfd );
-	
+
 	// create and enable the render context (RC)
 	*hRC = wglCreateContext( *hDC );
 	wglMakeCurrent( *hDC, *hRC );
 	sOpenGLInitialized = true;
-	
-	
+
+
 }
+
+
 
 // Disable OpenGL
 
