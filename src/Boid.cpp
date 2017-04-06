@@ -25,14 +25,14 @@ void Boid::Run(std::vector <Boid> &boids)
 		trans = btTransform(body0->getOrientation());
 		avel = body0->getAngularVelocity();
 		thrust = THRUST_FORCE * boid_front;
-		drag = -10 * vel;
+		drag = -DRAG_FORCE * vel;
 		lift = -1.00 * gravity * vel.length();
 		boid_front = trans * vec.forward;
 		boid_top = trans * vec.up;
 		boid_right = trans * vec.right;
 		//add forces
 		body0->applyTorque(Separation(boids)+Alignment(boids)+
-							10.0 * boid_front.cross(dir*PHYSICS_STRENGTH) - 6.0*avel);
+							20.0 * boid_front.cross(dir*PHYSICS_STRENGTH) - 10.0*avel);
 		//body0->applyTorque(10.0 * boid_front.cross(dir) - 6.0*avel);
 		body0->applyTorque(-6.5 * vec.up);//stay up
 		body0->applyTorque(10.5 * boid_top.cross(vec.up) - 10 * avel);//left/right tilt
@@ -201,7 +201,7 @@ void Boid::LimitVelocity(btScalar _limit)
 void Boid::RadialLimit(btScalar _limit)
 {
 	//in the radius //-----------------------------------------------------0.9 circle and -.9 flocking no order - good
-	if ((position.length()>_limit) && (btDot(-position.normalized(), boid_front)< 0.9)) {//0.5
+	if ((position.length()>_limit) && (btDot(-position.normalized(), boid_front)< 0.6)) {//0.5
 		dir = btVector3(-position.normalized()) ;
 
 		//DrawLine1(position, vec.zero, colour.white);

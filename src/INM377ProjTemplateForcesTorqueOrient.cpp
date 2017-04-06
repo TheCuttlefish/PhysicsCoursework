@@ -44,6 +44,8 @@ extern btAlignedObjectArray<btVector3> debugNormals;
 static GLDebugDrawer	sDebugDrawer;
 
 vector<Boid> boids;
+vector<btRigidBody*> obstacles;
+
 btScalar groundLevel = -50;
 
 INM377ProjTemplateTorqueOrient::INM377ProjTemplateTorqueOrient()
@@ -262,13 +264,14 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 		bShape->addPoint(btVector3(10, 0, 0));
 		bShape->addPoint(btVector3(0, 5, 0));
 		bShape->addPoint(btVector3(0, 0, 5));
+		bShape->addPoint(btVector3(-2, 2, 0));
 		bShape->addPoint(btVector3(0, 0, -5));
 
 		m_collisionShapes.push_back(bShape);
 		btTransform btrans;
 		btrans.setIdentity();
 //		btCollisionShape* bshape = m_collisionShapes[3];
-		btVector3 bpos(2*i,10, 2 * (i % 10));
+		btVector3 bpos( 4*i,10, 40 * (i % 10));
 		btrans.setOrigin(bpos);
 		btScalar bmass(1.0f);
 		btVector3 bLocalInertia;
@@ -288,28 +291,32 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 
 	btScalar cHeight = 100;
 	//obstacles
-	btCollisionShape* cylinder = new btCylinderShape(btVector3(4, cHeight, 4));
-	m_collisionShapes.push_back(cylinder);
+	for (int i = 0; i < 4; i++) {
+		btCollisionShape* cylinder = new btCylinderShape(btVector3(4, cHeight, 4));
+		m_collisionShapes.push_back(cylinder);
 
-	btRigidBody* cBody = NULL;
-	btTransform cTrans;
-	cTrans.setIdentity();
-	cTrans.setOrigin(btVector3(100, cHeight + groundLevel, 100));
-	btScalar cMass = 1000;
-	btVector3 cLocalInertia;
-	cylinder->calculateLocalInertia(cMass, cLocalInertia);
+		btRigidBody* cBody = NULL;
+		btTransform cTrans;
+		cTrans.setIdentity();
+		cTrans.setOrigin(btVector3(150-100*i, cHeight + groundLevel, 0));
+		btScalar cMass = 0;
+		btVector3 cLocalInertia;
+		cylinder->calculateLocalInertia(cMass, cLocalInertia);
 
-	btMotionState* motionState = NULL;
-	cBody = new btRigidBody(cMass, motionState, cylinder, cLocalInertia);
+		btMotionState* motionState = NULL;
+		cBody = new btRigidBody(cMass, motionState, cylinder, cLocalInertia);
 
 
 
-	cBody = localCreateRigidBody(cMass, cTrans, cylinder);
+		cBody = localCreateRigidBody(cMass, cTrans, cylinder);
 
-	cBody->setAnisotropicFriction(cylinder->getAnisotropicRollingFrictionDirection(), btCollisionObject::CF_ANISOTROPIC_ROLLING_FRICTION);
-	cBody->setFriction(0.5);
-	cBody->activate(true);
+		cBody->setAnisotropicFriction(cylinder->getAnisotropicRollingFrictionDirection(), btCollisionObject::CF_ANISOTROPIC_ROLLING_FRICTION);
+		cBody->setFriction(0.5);
+		cBody->activate(true);
 
+		obstacles.push_back(cBody);
+
+	}
 }
 
 void	INM377ProjTemplateTorqueOrient::clientResetScene()
@@ -406,7 +413,7 @@ void	INM377ProjTemplateTorqueOrient::shootBox(const btVector3& destination)
 void	INM377ProjTemplateTorqueOrient::exitPhysics()
 {
 
-
+	obstacles.clear();
 	boids.clear(); // clear on exit
 	//cleanup in the reverse order of creation/initialization
 
