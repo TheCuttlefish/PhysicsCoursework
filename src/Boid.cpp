@@ -25,13 +25,13 @@ void Boid::Run(std::vector <Boid> &boids)
 		trans = btTransform(body0->getOrientation());
 		avel = body0->getAngularVelocity();
 		thrust = THRUST_FORCE * boid_front;
-		drag = -15 * vel;
+		drag = -10 * vel;
 		lift = -1.00 * gravity * vel.length();
 		boid_front = trans * vec.forward;
 		boid_top = trans * vec.up;
 		boid_right = trans * vec.right;
 		//add forces
-		body0->applyTorque(Alignment(boids)+ 
+		body0->applyTorque(Separation(boids)+Alignment(boids)+
 							10.0 * boid_front.cross(dir*PHYSICS_STRENGTH) - 6.0*avel);
 		//body0->applyTorque(10.0 * boid_front.cross(dir) - 6.0*avel);
 		body0->applyTorque(-6.5 * vec.up);//stay up
@@ -39,7 +39,7 @@ void Boid::Run(std::vector <Boid> &boids)
 		//LimitVelocity(MAX_VELOCITY);//apply velocity
 
 		Cohesion(boids);
-		Separation(boids);
+		
 
 
 		if (windForce) {
@@ -98,8 +98,8 @@ btVector3 Boid::Alignment(std::vector <Boid> &boids) {
 				//printf("\n");
 
 
-				if (btDot(boid_front, boid.position - position)<0) {//in fron
-					DrawLine1(position, boid.position, colour.green);
+				if (btDot(boid_front, boid.position - position)<VISIBILITY) {//in fron
+					//DrawLine1(position, boid.position, colour.green);
 					aVec = aVec + btTransform(boid.body0->getOrientation())*vec.forward;
 					aVec = aVec.safeNormalize();
 				}
@@ -111,13 +111,8 @@ btVector3 Boid::Alignment(std::vector <Boid> &boids) {
 	}
 
 
+		DrawLine1(position, position + aVec * 30, colour.green);
 
-	if (aVec.length() > .1) {
-		DrawLine1(position, position + aVec * 30, colour.black);
-	}
-	else {
-		DrawLine1(position, position + aVec * 30, colour.red);
-	}
 
 	return aVec*ALIGNMENT_STRENGHT;// *1
 }
@@ -127,7 +122,7 @@ btVector3 Boid::Alignment(std::vector <Boid> &boids) {
 
 
 btVector3 Boid::Cohesion(std::vector <Boid> &boids) {
-	btVector3 cVec = vec.zero;
+	btVector3 cVec = btVector3(0, 0, 0);
 
 	for (auto & boid : boids) {
 		//can see
@@ -137,12 +132,12 @@ btVector3 Boid::Cohesion(std::vector <Boid> &boids) {
 		else {
 			btScalar dist = btDistance(boid.position, position);
 			//can see
-			if (dist<MAX_COHESION_VISIBILITY) {//30
+			if (dist<MAX_COHESION_VISIBILITY && dist>MAX_SEPARATION_VISIBILITY) {//30
 
 
 
 
-				if (btDot(boid_front, boid.position - position)<0) {//in front
+				if (btDot(boid_front, boid.position - position)<VISIBILITY) {//in front
 					//Cohesion
 					cVec = cVec + boid.position;
 				}
@@ -155,7 +150,7 @@ btVector3 Boid::Cohesion(std::vector <Boid> &boids) {
 	//get the average position
 	
 	cVec = cVec.safeNormalize();
-	body0->applyCentralForce(cVec);
+	body0->applyCentralForce(cVec*COHESION_STRENGHT);
 
 	//body0->applyTorque(cVec*1);//????5
 	//10 is good
@@ -163,7 +158,7 @@ btVector3 Boid::Cohesion(std::vector <Boid> &boids) {
 }
 
 btVector3 Boid::Separation(std::vector <Boid> &boids) {
-	btVector3 sVec = vec.zero;
+	btVector3 sVec = btVector3(0, 0, 0);
 
 	for (auto & boid : boids) {
 		//can see
@@ -173,23 +168,10 @@ btVector3 Boid::Separation(std::vector <Boid> &boids) {
 		else {
 			btScalar dist = btDistance(boid.position, position);
 			//can see
-			if (dist<MAX_SEPARATION_VISIBILITY) {//30
-				if (btDot(boid_front, boid.position - position)<0) {//in front
-					//Cohesion
-					//sVec = sVec + btTransform(boid.body0->getOrientation())*vec.forward;
-					
-				
-						sVec = sVec + position - boid.position;
-						
-						//lift = lift*95;
-						if (dist < 10) {
-							//thrust = thrust * 0.9;
+			if (dist < MAX_SEPARATION_VISIBILITY) {//30
+						if (btDot(boid_front, boid.position - position) < VISIBILITY) {//in front
+							sVec = sVec + position - boid.position;
 						}
-						//body0->applyCentralForce(-boid_front * 10);
-
-					
-
-				}
 			}
 		}
 
@@ -197,11 +179,12 @@ btVector3 Boid::Separation(std::vector <Boid> &boids) {
 	}
 
 	sVec.safeNormalize();
-	DrawLine1(position, position+ sVec*10, colour.orange);
-
-	sVec *= -1;
-	body0->applyCentralForce(sVec*SEPARATION_STRENGHT);
-	return sVec;
+	sVec = sVec*-1;
+	body0->applyCentralForce(-sVec*SEPARATION_STRENGHT);
+	
+		DrawLine1(position, position - sVec * 30, colour.red);
+	
+	return sVec*SEPARATION_STRENGHT;
 }
 
 void Boid::LimitVelocity(btScalar _limit)

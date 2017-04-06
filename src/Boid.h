@@ -29,19 +29,21 @@ public:
 private:
 	
 	const btScalar MAX_VELOCITY = 30;//30
-	const btScalar MAX_DISTANCE = 50;//100
+	const btScalar MAX_DISTANCE = 10;//100
 	const btScalar THRUST_FORCE= 20;//20
 
 	//visibility of 3 rules
 	const btScalar MAX_ALIGHNMENT_VISIBILITY = 30;
 	const btScalar MAX_COHESION_VISIBILITY = 30;
-	const btScalar MAX_SEPARATION_VISIBILITY = 30;
+	const btScalar MAX_SEPARATION_VISIBILITY = 10;
+	const btScalar VISIBILITY = 0.7;//0 
+
 
 	//strenght of 3 rules
 	const btScalar PHYSICS_STRENGTH = 1.5;
-	const btScalar ALIGNMENT_STRENGHT = 1;
-	const btScalar COHESION_STRENGHT = 1;
-	const btScalar SEPARATION_STRENGHT = 1;//not used
+	const btScalar ALIGNMENT_STRENGHT = 1.2;
+	const btScalar COHESION_STRENGHT = 2;
+	const btScalar SEPARATION_STRENGHT = 4;
 	//boid vectors
 	btVector3 boid_front;
 	btVector3 boid_top;

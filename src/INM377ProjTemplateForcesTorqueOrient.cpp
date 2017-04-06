@@ -224,7 +224,7 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 
 	btTransform groundTransform;
 	groundTransform.setIdentity();
-	groundTransform.setOrigin(btVector3(0,-20,0));
+	groundTransform.setOrigin(btVector3(0,-200,0));
 
 	//We can also use DemoApplication::localCreateRigidBody, but for clarity it is provided here:
 	{
@@ -262,7 +262,7 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 		btTransform btrans;
 		btrans.setIdentity();
 //		btCollisionShape* bshape = m_collisionShapes[3];
-		btVector3 bpos(2*i,1*i, 2 * (i % 10));
+		btVector3 bpos(2*i,10+1*i, 2 * (i % 10));
 		btrans.setOrigin(bpos);
 		btScalar bmass(1.0f);
 		btVector3 bLocalInertia;
