@@ -258,7 +258,7 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 	}
 
 
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < 20; i++) {
 		
 		//boid
 		btConvexHullShape * bShape = new btConvexHullShape();
@@ -272,7 +272,8 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 		btTransform btrans;
 		btrans.setIdentity();
 //		btCollisionShape* bshape = m_collisionShapes[3];
-		btVector3 bpos( 4*i,10, 40 * (i % 10));
+		//btVector3 bpos( 4*i,10, 40 * (i % 10));
+		btVector3 bpos(0,0,0);
 		btrans.setOrigin(bpos);
 		btScalar bmass(1.0f);
 		btVector3 bLocalInertia;

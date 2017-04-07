@@ -31,8 +31,7 @@ void Boid::Run(std::vector <Boid> &boids)
 		boid_top = trans * vec.up;
 		boid_right = trans * vec.right;
 		//add forces
-		body0->applyTorque(Separation(boids)+Alignment(boids)+
-							20.0 * boid_front.cross(dir*PHYSICS_STRENGTH) - 10.0*avel);
+		body0->applyTorque(20.0 * boid_front.cross(Separation(boids) + Alignment(boids) + dir*PHYSICS_STRENGTH) - 10.0*avel);
 		//body0->applyTorque(10.0 * boid_front.cross(dir) - 6.0*avel);
 		body0->applyTorque(-6.5 * vec.up);//stay up
 		body0->applyTorque(10.5 * boid_top.cross(vec.up) - 10 * avel);//left/right tilt
@@ -98,10 +97,12 @@ btVector3 Boid::Alignment(std::vector <Boid> &boids) {
 				//printf("\n");
 
 
-				if (btDot(boid_front, boid.position - position)<VISIBILITY) {//in fron
+				if (btDot(boid_front, boid.position - position)>VISIBILITY) {//in fron
 					//DrawLine1(position, boid.position, colour.green);
 					aVec = aVec + btTransform(boid.body0->getOrientation())*vec.forward;
-					aVec = aVec.safeNormalize();
+					
+					//show who I'm looking at
+					DrawLine1(position, position+(boid.position-position)/2, colour.black);
 				}
 			}
 
@@ -110,7 +111,9 @@ btVector3 Boid::Alignment(std::vector <Boid> &boids) {
 
 	}
 
-
+	if (aVec.length()>1) {
+		aVec = aVec.safeNormalize();
+	}
 		DrawLine1(position, position + aVec * 30, colour.green);
 
 
@@ -137,7 +140,7 @@ btVector3 Boid::Cohesion(std::vector <Boid> &boids) {
 
 
 
-				if (btDot(boid_front, boid.position - position)<VISIBILITY) {//in front
+				if (btDot(boid_front, boid.position - position)>VISIBILITY) {//in front
 					//Cohesion
 					cVec = cVec + boid.position;
 				}
@@ -148,8 +151,9 @@ btVector3 Boid::Cohesion(std::vector <Boid> &boids) {
 	}
 
 	//get the average position
-	
-	cVec = cVec.safeNormalize();
+	if (cVec.length()>1) {
+		cVec = cVec.safeNormalize();
+	}
 	body0->applyCentralForce(cVec*COHESION_STRENGHT);
 
 	//body0->applyTorque(cVec*1);//????5
@@ -169,7 +173,7 @@ btVector3 Boid::Separation(std::vector <Boid> &boids) {
 			btScalar dist = btDistance(boid.position, position);
 			//can see
 			if (dist < MAX_SEPARATION_VISIBILITY) {//30
-						if (btDot(boid_front, boid.position - position) < VISIBILITY) {//in front
+						if (btDot(boid_front, boid.position - position) > VISIBILITY) {//in front
 							sVec = sVec + position - boid.position;
 						}
 			}
@@ -177,8 +181,10 @@ btVector3 Boid::Separation(std::vector <Boid> &boids) {
 
 
 	}
-
-	sVec.safeNormalize();
+	if (sVec.length()>1) {
+		sVec = sVec.safeNormalize();
+	}
+	
 	sVec = sVec*-1;
 	body0->applyCentralForce(-sVec*SEPARATION_STRENGHT);
 	
@@ -201,14 +207,14 @@ void Boid::LimitVelocity(btScalar _limit)
 void Boid::RadialLimit(btScalar _limit)
 {
 	//in the radius //-----------------------------------------------------0.9 circle and -.9 flocking no order - good
-	if ((position.length()>_limit) && (btDot(-position.normalized(), boid_front)< 0.6)) {//0.5
+	if ((position.length()>_limit) && (btDot(-position.normalized(), boid_front)< 0.7)) {//0.5
 		dir = btVector3(-position.normalized()) ;
 
 		//DrawLine1(position, vec.zero, colour.white);
 
 	}
 	else {
-		dir = vec.zero;
+		//dir = vec.zero;
 		//DrawLine1(position, vec.zero, colour.black);
 	}
 }
@@ -224,7 +230,7 @@ btVector3 Boid::Avoid(std::vector <btRigidBody*> &obst) {
 
 		btScalar dist = btDistance(cylPos, position);
 		//can see
-		if (dist < 30) {//30
+		if (dist < 40) {//30
 			if (btDot(boid_front, cylPos - position) > VISIBILITY) {//in front
 				avoidVec = position - cylPos;
 				DrawLine1(position, cylPos, colour.blue);
@@ -236,9 +242,10 @@ btVector3 Boid::Avoid(std::vector <btRigidBody*> &obst) {
 	if(avoidVec.length()>1){
 	avoidVec= avoidVec.safeNormalize();
 	}
-	body0->applyCentralForce(avoidVec*40);
+	body0->applyCentralForce(avoidVec*10);
 	//body0->applyTorque(btVector3(0, avoidVec.getZ(), 0)*10);
-	body0->applyTorque(20.0 * boid_front.cross(avoidVec*PHYSICS_STRENGTH) - 10.0*avel);
+	//body0->applyTorque(20.0 * boid_front.cross(avoidVec*10) - 10.0*avel);
+	body0->applyTorque(20.0 * boid_front.cross(avoidVec * 2));
 	return avoidVec;
 }
 

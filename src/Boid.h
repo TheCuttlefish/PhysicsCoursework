@@ -29,22 +29,23 @@ public:
 //my methods
 private:
 	
-	const btScalar MAX_VELOCITY = 30;//30
-	const btScalar MAX_DISTANCE = 20;//100
+	const btScalar MAX_DISTANCE = 60;//100
+
+	const btScalar MAX_VELOCITY = 20;//30
 	const btScalar THRUST_FORCE= 20;//20
 	const btScalar DRAG_FORCE = 10;//10
 	//visibility of 3 rules
-	const btScalar MAX_ALIGHNMENT_VISIBILITY = 30;
-	const btScalar MAX_COHESION_VISIBILITY = 30;
-	const btScalar MAX_SEPARATION_VISIBILITY = 8;//10
+	const btScalar MAX_ALIGHNMENT_VISIBILITY = 40;
+	const btScalar MAX_COHESION_VISIBILITY = 40;
+	const btScalar MAX_SEPARATION_VISIBILITY = 20;//10
 	const btScalar VISIBILITY = 0.7;//0 -- 0.7 works better
 
 
 	//strenght of 3 rules
-	const btScalar PHYSICS_STRENGTH = 1.5;//1.5
-	const btScalar ALIGNMENT_STRENGHT = 1.2;//1.2
-	const btScalar COHESION_STRENGHT = 2;//2
-	const btScalar SEPARATION_STRENGHT = 4;//4
+	const btScalar PHYSICS_STRENGTH = 1;//1.5
+	const btScalar ALIGNMENT_STRENGHT =1 ;//1.2
+	const btScalar COHESION_STRENGHT = 1.;//2
+	const btScalar SEPARATION_STRENGHT = 1;//4
 	//boid vectors
 	btVector3 boid_front;
 	btVector3 boid_top;
