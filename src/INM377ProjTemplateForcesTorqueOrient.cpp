@@ -190,6 +190,7 @@ void MyTickCallback(btDynamicsWorld *world, btScalar timeStep) {
 		
 		for (auto & boid: boids) {
 			boid.Run(boids);
+			boid.Avoid(obstacles);
 		}
 }
 

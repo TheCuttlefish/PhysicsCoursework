@@ -17,7 +17,8 @@ public:
 	btRigidBody * body0;
 	void Run(std::vector <Boid> &boids);
 
-
+	//obstacles
+	btVector3 Avoid(std::vector <btRigidBody*> &obst);
 
 	//not important
 	bool drawGizmos = true;
@@ -33,17 +34,17 @@ private:
 	const btScalar THRUST_FORCE= 20;//20
 	const btScalar DRAG_FORCE = 10;//10
 	//visibility of 3 rules
-	const btScalar MAX_ALIGHNMENT_VISIBILITY = 20;
-	const btScalar MAX_COHESION_VISIBILITY = 20;
+	const btScalar MAX_ALIGHNMENT_VISIBILITY = 30;
+	const btScalar MAX_COHESION_VISIBILITY = 30;
 	const btScalar MAX_SEPARATION_VISIBILITY = 8;//10
 	const btScalar VISIBILITY = 0.7;//0 -- 0.7 works better
 
 
 	//strenght of 3 rules
-	const btScalar PHYSICS_STRENGTH = 3;//1.5
-	const btScalar ALIGNMENT_STRENGHT = 2.5;//1.2
-	const btScalar COHESION_STRENGHT = 2.5;//2
-	const btScalar SEPARATION_STRENGHT = 3;//4
+	const btScalar PHYSICS_STRENGTH = 1.5;//1.5
+	const btScalar ALIGNMENT_STRENGHT = 1.2;//1.2
+	const btScalar COHESION_STRENGHT = 2;//2
+	const btScalar SEPARATION_STRENGHT = 4;//4
 	//boid vectors
 	btVector3 boid_front;
 	btVector3 boid_top;
@@ -77,6 +78,8 @@ private:
 	btVector3 Cohesion(std::vector <Boid> &boids);//steer to move toward the average position (center of mass) of local flockmates
 	btVector3 Separation(std::vector <Boid> &boids);//steer to avoid crowding local flockmates
 
+
+	
 //my colours
 	struct Colour {
 		const btVector3 red = btVector3(1, 0, 0);

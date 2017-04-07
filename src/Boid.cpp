@@ -182,7 +182,7 @@ btVector3 Boid::Separation(std::vector <Boid> &boids) {
 	sVec = sVec*-1;
 	body0->applyCentralForce(-sVec*SEPARATION_STRENGHT);
 	
-		DrawLine1(position, position - sVec * 30, colour.red);
+		//DrawLine1(position, position - sVec * 30, colour.red);
 	
 	return sVec*SEPARATION_STRENGHT;
 }
@@ -213,7 +213,34 @@ void Boid::RadialLimit(btScalar _limit)
 	}
 }
 
+btVector3 Boid::Avoid(std::vector <btRigidBody*> &obst) {
+	btVector3 avoidVec = btVector3(0, 0, 0);
+	btVector3 cylPos = btVector3(0, 0, 0);
+	for (auto & cyl : obst) {
 
+		//getting position with same y
+		cylPos = btVector3(cyl->getWorldTransform().getOrigin());
+		cylPos.setY(position.y());
+
+		btScalar dist = btDistance(cylPos, position);
+		//can see
+		if (dist < 30) {//30
+			if (btDot(boid_front, cylPos - position) > VISIBILITY) {//in front
+				avoidVec = position - cylPos;
+				DrawLine1(position, cylPos, colour.blue);
+			}
+		}
+	}
+
+	
+	if(avoidVec.length()>1){
+	avoidVec= avoidVec.safeNormalize();
+	}
+	body0->applyCentralForce(avoidVec*40);
+	//body0->applyTorque(btVector3(0, avoidVec.getZ(), 0)*10);
+	body0->applyTorque(20.0 * boid_front.cross(avoidVec*PHYSICS_STRENGTH) - 10.0*avel);
+	return avoidVec;
+}
 
 
 void Boid::DrawLine1(const btVector3 &from, const btVector3 &to, const btVector3 &c) {
