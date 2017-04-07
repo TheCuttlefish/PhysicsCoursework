@@ -46,7 +46,7 @@ static GLDebugDrawer	sDebugDrawer;
 vector<Boid> boids;
 vector<btRigidBody*> obstacles;
 
-btScalar groundLevel = -50;
+btScalar groundLevel = -80;
 
 INM377ProjTemplateTorqueOrient::INM377ProjTemplateTorqueOrient()
 :m_ccdMode(USE_CCD)
@@ -258,7 +258,7 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 	}
 
 
-	for (int i = 0; i < 20; i++) {
+	for (int i = 0; i < 30; i++) {
 		
 		//boid
 		btConvexHullShape * bShape = new btConvexHullShape();
@@ -272,8 +272,8 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 		btTransform btrans;
 		btrans.setIdentity();
 //		btCollisionShape* bshape = m_collisionShapes[3];
-		//btVector3 bpos( 4*i,10, 40 * (i % 10));
-		btVector3 bpos(0,0,0);
+		btVector3 bpos( 4*i,10, 40 * (i % 10));
+		//btVector3 bpos(0,0,0);
 		btrans.setOrigin(bpos);
 		btScalar bmass(1.0f);
 		btVector3 bLocalInertia;

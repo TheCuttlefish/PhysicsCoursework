@@ -31,10 +31,12 @@ void Boid::Run(std::vector <Boid> &boids)
 		boid_top = trans * vec.up;
 		boid_right = trans * vec.right;
 		//add forces
-		body0->applyTorque(20.0 * boid_front.cross(Separation(boids) + Alignment(boids) + dir*PHYSICS_STRENGTH) - 10.0*avel);
+		body0->applyTorque(20.0 * boid_front.cross(Separation(boids) +
+													Alignment(boids) +
+													dir*PHYSICS_STRENGTH) - 10.0*avel);
 		//body0->applyTorque(10.0 * boid_front.cross(dir) - 6.0*avel);
-		body0->applyTorque(-6.5 * vec.up);//stay up
-		body0->applyTorque(10.5 * boid_top.cross(vec.up) - 10 * avel);//left/right tilt
+		body0->applyTorque(-6.5 * vec.up);//stay up   /-6.5
+		body0->applyTorque(20.5 * boid_top.cross(vec.up) - 10 * avel);//left/right tilt
 		//LimitVelocity(MAX_VELOCITY);//apply velocity
 
 		Cohesion(boids);
@@ -117,7 +119,7 @@ btVector3 Boid::Alignment(std::vector <Boid> &boids) {
 		DrawLine1(position, position + aVec * 30, colour.green);
 
 
-	return aVec*ALIGNMENT_STRENGHT;// *1
+	return aVec*ALIGNMENT_STRENGTH;// *1
 }
 
 
@@ -154,11 +156,11 @@ btVector3 Boid::Cohesion(std::vector <Boid> &boids) {
 	if (cVec.length()>1) {
 		cVec = cVec.safeNormalize();
 	}
-	body0->applyCentralForce(cVec*COHESION_STRENGHT);
+	body0->applyCentralForce(cVec*COHESION_STRENGTH);
 
 	//body0->applyTorque(cVec*1);//????5
 	//10 is good
-	return cVec*COHESION_STRENGHT;
+	return cVec*COHESION_STRENGTH;
 }
 
 btVector3 Boid::Separation(std::vector <Boid> &boids) {
@@ -186,11 +188,11 @@ btVector3 Boid::Separation(std::vector <Boid> &boids) {
 	}
 	
 	sVec = sVec*-1;
-	body0->applyCentralForce(-sVec*SEPARATION_STRENGHT);
+	body0->applyCentralForce(-sVec*SEPARATION_STRENGTH);
 	
 		//DrawLine1(position, position - sVec * 30, colour.red);
 	
-	return sVec*SEPARATION_STRENGHT;
+	return sVec*SEPARATION_STRENGTH;
 }
 
 void Boid::LimitVelocity(btScalar _limit)
@@ -207,7 +209,7 @@ void Boid::LimitVelocity(btScalar _limit)
 void Boid::RadialLimit(btScalar _limit)
 {
 	//in the radius //-----------------------------------------------------0.9 circle and -.9 flocking no order - good
-	if ((position.length()>_limit) && (btDot(-position.normalized(), boid_front)< 0.7)) {//0.5
+	if ((position.length()>_limit) && (btDot(-position.normalized(), boid_front)< 0.7)) {//0.7
 		dir = btVector3(-position.normalized()) ;
 
 		//DrawLine1(position, vec.zero, colour.white);
@@ -242,7 +244,7 @@ btVector3 Boid::Avoid(std::vector <btRigidBody*> &obst) {
 	if(avoidVec.length()>1){
 	avoidVec= avoidVec.safeNormalize();
 	}
-	body0->applyCentralForce(avoidVec*10);
+	body0->applyCentralForce(avoidVec*20);
 	//body0->applyTorque(btVector3(0, avoidVec.getZ(), 0)*10);
 	//body0->applyTorque(20.0 * boid_front.cross(avoidVec*10) - 10.0*avel);
 	body0->applyTorque(20.0 * boid_front.cross(avoidVec * 2));
