@@ -272,8 +272,8 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 		btTransform btrans;
 		btrans.setIdentity();
 //		btCollisionShape* bshape = m_collisionShapes[3];
-		btVector3 bpos( 4*i,10, 40 * (i % 10));
-		//btVector3 bpos(0,0,0);
+		//btVector3 bpos( 4*i,10, 40 * (i % 10));
+		btVector3 bpos(0,0,0);
 		btrans.setOrigin(bpos);
 		btScalar bmass(1.0f);
 		btVector3 bLocalInertia;
@@ -281,7 +281,6 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 		boid = localCreateRigidBody(bmass, btrans, bShape);
 		boid->setAnisotropicFriction(bShape->getAnisotropicRollingFrictionDirection(), btCollisionObject::CF_ANISOTROPIC_ROLLING_FRICTION);
 		boid->setFriction(0.5);
-		//		boid->setLinearVelocity(btVector3(1, 0, 0));
 		boid->activate(true);
 
 		boids.push_back(Boid());

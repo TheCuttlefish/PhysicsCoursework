@@ -34,37 +34,20 @@ void Boid::Run(std::vector <Boid> &boids)
 		body0->applyTorque(20.0 * boid_front.cross(Separation(boids) +
 													Alignment(boids) +
 													dir*PHYSICS_STRENGTH) - 10.0*avel);
-		//body0->applyTorque(10.0 * boid_front.cross(dir) - 6.0*avel);
+		Cohesion(boids);//--applied only on force (not torque)
 		body0->applyTorque(-6.5 * vec.up);//stay up   /-6.5
 		body0->applyTorque(20.5 * boid_top.cross(vec.up) - 10 * avel);//left/right tilt
-		//LimitVelocity(MAX_VELOCITY);//apply velocity
-
-		Cohesion(boids);
-		
+		LimitVelocity(MAX_VELOCITY);//apply velocity limit
 
 
 		if (windForce) {
 			body0->applyCentralForce(btVector3(2, 0, 0));
 		}
 
-
-
-		velocity = body0->getLinearVelocity().length();
-		if (velocity < MAX_VELOCITY) {
-			body0->applyCentralForce(thrust + lift + gravity + drag);
-		}
-		else {
-			body0->applyCentralForce(lift + gravity + drag);
-		}
-
 	}
 
-
+	//limit the environment
 	RadialLimit(MAX_DISTANCE);
-	//
-	
-	//
-
 
 	//draw axes
 	//DrawLine1(position, position + boid_front * 15, colour.blue);
@@ -78,11 +61,6 @@ void Boid::Run(std::vector <Boid> &boids)
 btVector3 Boid::Alignment(std::vector <Boid> &boids) {
 	btVector3 aVec = btVector3(0,0,0);
 
-
-	
-
-
-
 	for (auto & boid : boids) {
 		//can see
 		if (boid.body0 == body0) {
@@ -91,26 +69,13 @@ btVector3 Boid::Alignment(std::vector <Boid> &boids) {
 			btScalar dist = btDistance(boid.position, position);
 			//can see
 			if(dist<MAX_ALIGHNMENT_VISIBILITY){//50
-
-
-				string example;
-				example = to_string(boid_front.x());
-				//printf(example.c_str());
-				//printf("\n");
-
-
 				if (btDot(boid_front, boid.position - position)>VISIBILITY) {//in fron
-					//DrawLine1(position, boid.position, colour.green);
 					aVec = aVec + btTransform(boid.body0->getOrientation())*vec.forward;
-					
 					//show who I'm looking at
 					DrawLine1(position, position+(boid.position-position)/2, colour.black);
 				}
 			}
-
 		}
-
-
 	}
 
 	if (aVec.length()>1) {
@@ -119,7 +84,7 @@ btVector3 Boid::Alignment(std::vector <Boid> &boids) {
 		DrawLine1(position, position + aVec * 30, colour.green);
 
 
-	return aVec*ALIGNMENT_STRENGTH;// *1
+	return aVec*ALIGNMENT_STRENGTH;
 }
 
 
@@ -157,9 +122,6 @@ btVector3 Boid::Cohesion(std::vector <Boid> &boids) {
 		cVec = cVec.safeNormalize();
 	}
 	body0->applyCentralForce(cVec*COHESION_STRENGTH);
-
-	//body0->applyTorque(cVec*1);//????5
-	//10 is good
 	return cVec*COHESION_STRENGTH;
 }
 
@@ -177,7 +139,7 @@ btVector3 Boid::Separation(std::vector <Boid> &boids) {
 			if (dist < MAX_SEPARATION_VISIBILITY) {//30
 						if (btDot(boid_front, boid.position - position) > VISIBILITY) {//in front
 							sVec = sVec + position - boid.position;
-						}
+				}
 			}
 		}
 
@@ -188,10 +150,8 @@ btVector3 Boid::Separation(std::vector <Boid> &boids) {
 	}
 	
 	sVec = sVec*-1;
-	body0->applyCentralForce(-sVec*SEPARATION_STRENGTH);
-	
-		//DrawLine1(position, position - sVec * 30, colour.red);
-	
+	body0->applyCentralForce(sVec*SEPARATION_STRENGTH);
+
 	return sVec*SEPARATION_STRENGTH;
 }
 
@@ -211,13 +171,6 @@ void Boid::RadialLimit(btScalar _limit)
 	//in the radius //-----------------------------------------------------0.9 circle and -.9 flocking no order - good
 	if ((position.length()>_limit) && (btDot(-position.normalized(), boid_front)< 0.7)) {//0.7
 		dir = btVector3(-position.normalized()) ;
-
-		//DrawLine1(position, vec.zero, colour.white);
-
-	}
-	else {
-		//dir = vec.zero;
-		//DrawLine1(position, vec.zero, colour.black);
 	}
 }
 
