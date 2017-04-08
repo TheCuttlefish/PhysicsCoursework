@@ -33,6 +33,9 @@ subject to the following restrictions:
 #include <string.h>
 #include <string>
 
+#include <stdlib.h>
+#include <time.h>
+
 #include "Boid.h"
 #include <vector>
 using namespace std;
@@ -45,7 +48,7 @@ static GLDebugDrawer	sDebugDrawer;
 
 vector<Boid> boids;
 vector<btRigidBody*> obstacles;
-
+btScalar setDelta = 1000000.f;
 btScalar groundLevel = -80;
 
 INM377ProjTemplateTorqueOrient::INM377ProjTemplateTorqueOrient()
@@ -82,7 +85,7 @@ void INM377ProjTemplateTorqueOrient::clientMoveAndDisplay()
 	///step the simulation
 	if (m_dynamicsWorld)
 	{
-		m_dynamicsWorld->stepSimulation(ms / 1000000.f,0);//ms / 1000000.f);
+		m_dynamicsWorld->stepSimulation(ms / setDelta,0);//ms / 1000000.f);
 		//optional but useful: debug drawing
 		m_dynamicsWorld->debugDrawWorld();
 	}
@@ -200,6 +203,12 @@ void MyTickCallback(btDynamicsWorld *world, btScalar timeStep) {
 
 void	INM377ProjTemplateTorqueOrient::initPhysics()
 {
+
+
+
+	srand(time(0));
+	
+
 	setTexturing(true);
 	setShadows(false);
 
@@ -222,15 +231,9 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 
 	///create a few basic rigid bodies
 	btBoxShape* box = new btBoxShape(btVector3(btScalar(510.),btScalar(1.),btScalar(510.)));
-//	box->initializePolyhedralFeatures();
 	btCollisionShape* groundShape = box;
-
-//	btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0,1,0),50);
-	
 	m_collisionShapes.push_back(groundShape);
-	//m_collisionShapes.push_back(new btCylinderShape (btVector3(CUBE_HALF_EXTENTS,CUBE_HALF_EXTENTS,CUBE_HALF_EXTENTS)));
 	m_collisionShapes.push_back(new btBoxShape (btVector3(CUBE_HALF_EXTENTS,CUBE_HALF_EXTENTS,CUBE_HALF_EXTENTS)));
-
 	btTransform groundTransform;
 	groundTransform.setIdentity();
 	groundTransform.setOrigin(btVector3(0, groundLevel,0));
@@ -251,28 +254,28 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass,myMotionState,groundShape,localInertia);
 		btRigidBody* body = new btRigidBody(rbInfo);
 		body->setFriction(0.5);
-
-		//body->setRollingFriction(0.3);
-		//add the body to the dynamics world
 		m_dynamicsWorld->addRigidBody(body);
 	}
 
 
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < 25; i++) {
 		
 		//boid
 		btConvexHullShape * bShape = new btConvexHullShape();
+
+
+		
 		bShape->addPoint(btVector3(10, 0, 0));
-		bShape->addPoint(btVector3(0, 5, 0));
+		bShape->addPoint(btVector3(0, 4, 0));
 		bShape->addPoint(btVector3(0, 0, 5));
-		bShape->addPoint(btVector3(-2, 2, 0));
 		bShape->addPoint(btVector3(0, 0, -5));
+		
 
 		m_collisionShapes.push_back(bShape);
 		btTransform btrans;
 		btrans.setIdentity();
 //		btCollisionShape* bshape = m_collisionShapes[3];
-		btVector3 bpos( 4*i,10, 40 * (i % 10));
+		btVector3 bpos( 4*i,-50+rand() %100, 2*(i % 5));
 		//btVector3 bpos(0,0,0);
 		btrans.setOrigin(bpos);
 		btScalar bmass(1.0f);
@@ -282,7 +285,6 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 		boid->setAnisotropicFriction(bShape->getAnisotropicRollingFrictionDirection(), btCollisionObject::CF_ANISOTROPIC_ROLLING_FRICTION);
 		boid->setFriction(0.5);
 		boid->activate(true);
-
 		boids.push_back(Boid());
 		boids[i].body0 = boid;
 
@@ -299,7 +301,7 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 		btRigidBody* cBody = NULL;
 		btTransform cTrans;
 		cTrans.setIdentity();
-		cTrans.setOrigin(btVector3(150-100*i, cHeight + groundLevel, 0));
+		cTrans.setOrigin(btVector3(150-100*i, cHeight + groundLevel,-25+ rand() % 50));
 		btScalar cMass = 0;
 		btVector3 cLocalInertia;
 		cylinder->calculateLocalInertia(cMass, cLocalInertia);
@@ -316,7 +318,7 @@ void	INM377ProjTemplateTorqueOrient::initPhysics()
 		cBody->activate(true);
 
 		obstacles.push_back(cBody);
-
+		
 	}
 }
 
@@ -344,6 +346,12 @@ void INM377ProjTemplateTorqueOrient::keyboardCallback(unsigned char key, int x, 
 		for (auto & boid : boids) {
 			boid.windForce = !boid.windForce;
 		}
+	}
+
+	if (key == '3') {
+
+		//change delta time
+		setDelta = setDelta == 1000000.f ? 200000.f : 1000000.f;
 	}
 
 
@@ -409,13 +417,11 @@ void	INM377ProjTemplateTorqueOrient::shootBox(const btVector3& destination)
 }
 
 
-
-
 void	INM377ProjTemplateTorqueOrient::exitPhysics()
 {
 
 	obstacles.clear();
-	boids.clear(); // clear on exit
+	
 	//cleanup in the reverse order of creation/initialization
 
 	//remove the rigidbodies from the dynamics world and delete them
@@ -438,21 +444,11 @@ void	INM377ProjTemplateTorqueOrient::exitPhysics()
 		btCollisionShape* shape = m_collisionShapes[j];
 		delete shape;
 	}
+
+
+	boids.clear(); // clear on exit
 	m_collisionShapes.clear();
 
 	delete m_dynamicsWorld;
 	
-//	delete m_solver;
-	
-//	delete m_broadphase;
-	
-//	delete m_dispatcher;
-
-//	delete m_collisionConfiguration;
-
-	
 }
-
-
-
-

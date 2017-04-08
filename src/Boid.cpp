@@ -187,5 +187,7 @@ void Boid::DrawLine1(const btVector3 &_from, const btVector3 &_to, const btVecto
 	btglVertex3(_from.x(), _from.y(), _from.z());
 	btglVertex3(_to.x(), _to.y(), _to.z());
 	glEnd();
-
+	
 }
+
+

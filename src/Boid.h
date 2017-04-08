@@ -12,7 +12,6 @@ public:
 
 	//obstacles
 	btVector3 Avoid(std::vector <btRigidBody*> &obst);
-
 	//not important
 	bool drawGizmos = false;
 	bool windForce = false;
