@@ -2,20 +2,13 @@
 #include "GlutStuff.h"
 
 
-#include <stdio.h> //printf debugging
-#include <string.h>
-#include <string>
-
-
 
 using namespace std;
 
 
 void Boid::Run(std::vector <Boid> &boids)
 {
-
-
-	//main physics
+//-----> MAIN PHYSICS
 	{
 		position = btVector3(body0->getWorldTransform().getOrigin());//boid pos
 		mass = body0->getInvMass();
@@ -30,19 +23,17 @@ void Boid::Run(std::vector <Boid> &boids)
 		boid_front = trans * vec.forward;
 		boid_top = trans * vec.up;
 		boid_right = trans * vec.right;
-		//add forces
+		//apply torque/force
 		body0->applyTorque(20.0 * boid_front.cross(Separation(boids) +
 													Alignment(boids) +
 													dir*PHYSICS_STRENGTH) - 10.0*avel);
 		Cohesion(boids);//--applied only on force (not torque)
+
 		body0->applyTorque(-6.5 * vec.up);//stay up   /-6.5
 		body0->applyTorque(20.5 * boid_top.cross(vec.up) - 10 * avel);//left/right tilt
 		LimitVelocity(MAX_VELOCITY);//apply velocity limit
 
-
-		if (windForce) {
-			body0->applyCentralForce(btVector3(2, 0, 0));
-		}
+		Wind();//wind can be toggled with button [2]
 
 	}
 
@@ -57,19 +48,17 @@ void Boid::Run(std::vector <Boid> &boids)
 
 }
 
-
+//-----> RULE 1: ALIGNMENT
 btVector3 Boid::Alignment(std::vector <Boid> &boids) {
-	btVector3 aVec = btVector3(0,0,0);
+	btVector3 aVec = vec.zero;
 
 	for (auto & boid : boids) {
 		//can see
-		if (boid.body0 == body0) {
+		if (boid.body0 != body0) {
 
-		} else {
-			btScalar dist = btDistance(boid.position, position);
-			//can see
+			btScalar dist = btDistance(boid.position, position);//distance of vision
 			if(dist<MAX_ALIGHNMENT_VISIBILITY){//50
-				if (btDot(boid_front, boid.position - position)>VISIBILITY) {//in fron
+				if (btDot(boid_front, boid.position - position)>VISIBILITY) {//in front
 					aVec = aVec + btTransform(boid.body0->getOrientation())*vec.forward;
 					//show who I'm looking at
 					DrawLine1(position, position+(boid.position-position)/2, colour.black);
@@ -78,82 +67,82 @@ btVector3 Boid::Alignment(std::vector <Boid> &boids) {
 		}
 	}
 
-	if (aVec.length()>1) {
-		aVec = aVec.safeNormalize();
-	}
+	CheckToNormalize(aVec);
+
 		DrawLine1(position, position + aVec * 30, colour.green);
-
-
 	return aVec*ALIGNMENT_STRENGTH;
 }
 
-
-
-
-
-btVector3 Boid::Cohesion(std::vector <Boid> &boids) {
-	btVector3 cVec = btVector3(0, 0, 0);
+//-----> RULE 2: COHESION
+void Boid::Cohesion(std::vector <Boid> &boids) {
+	btVector3 cVec = vec.zero;
 
 	for (auto & boid : boids) {
-		//can see
-		if (boid.body0 == body0) {
+		if (boid.body0 != body0) {
 
-		}
-		else {
-			btScalar dist = btDistance(boid.position, position);
-			//can see
+			btScalar dist = btDistance(boid.position, position);//distance of vision
 			if (dist<MAX_COHESION_VISIBILITY && dist>MAX_SEPARATION_VISIBILITY) {//30
-
-
-
-
 				if (btDot(boid_front, boid.position - position)>VISIBILITY) {//in front
-					//Cohesion
 					cVec = cVec + boid.position;
 				}
 			}
 		}
-
-
 	}
-
-	//get the average position
-	if (cVec.length()>1) {
-		cVec = cVec.safeNormalize();
-	}
+	CheckToNormalize(cVec);
 	body0->applyCentralForce(cVec*COHESION_STRENGTH);
-	return cVec*COHESION_STRENGTH;
 }
 
+
+//-----> RULE 3: SEPARATION
 btVector3 Boid::Separation(std::vector <Boid> &boids) {
-	btVector3 sVec = btVector3(0, 0, 0);
+	btVector3 sVec = vec.zero;
 
 	for (auto & boid : boids) {
 		//can see
-		if (boid.body0 == body0) {
+		if (boid.body0 != body0) {
 
-		}
-		else {
-			btScalar dist = btDistance(boid.position, position);
-			//can see
+			btScalar dist = btDistance(boid.position, position);//distance of vision
 			if (dist < MAX_SEPARATION_VISIBILITY) {//30
 						if (btDot(boid_front, boid.position - position) > VISIBILITY) {//in front
 							sVec = sVec + position - boid.position;
 				}
 			}
 		}
-
-
 	}
-	if (sVec.length()>1) {
-		sVec = sVec.safeNormalize();
-	}
-	
+
+	CheckToNormalize(sVec);
 	sVec = sVec*-1;
 	body0->applyCentralForce(sVec*SEPARATION_STRENGTH);
-
 	return sVec*SEPARATION_STRENGTH;
 }
+
+
+
+//-----> RULE 3.1: AVOIDANCE
+btVector3 Boid::Avoid(std::vector <btRigidBody*> &obst) {
+	btVector3 avoidVec = vec.zero;
+	btVector3 cylPos = vec.zero;
+	for (auto & cyl : obst) {
+
+		//getting position with the same y
+		cylPos = btVector3(cyl->getWorldTransform().getOrigin());
+		cylPos.setY(position.y());
+
+		btScalar dist = btDistance(cylPos, position);//distance of vision
+		if (dist < 40) {//30
+			if (btDot(boid_front, cylPos - position) > VISIBILITY) {//in front
+				avoidVec = position - cylPos;
+				DrawLine1(position, cylPos, colour.blue);
+			}
+		}
+	}
+
+	CheckToNormalize(avoidVec);
+	body0->applyCentralForce(avoidVec * 20);
+	body0->applyTorque(20.0 * boid_front.cross(avoidVec * 2));
+	return avoidVec;
+}
+
 
 void Boid::LimitVelocity(btScalar _limit)
 {
@@ -174,46 +163,29 @@ void Boid::RadialLimit(btScalar _limit)
 	}
 }
 
-btVector3 Boid::Avoid(std::vector <btRigidBody*> &obst) {
-	btVector3 avoidVec = btVector3(0, 0, 0);
-	btVector3 cylPos = btVector3(0, 0, 0);
-	for (auto & cyl : obst) {
-
-		//getting position with same y
-		cylPos = btVector3(cyl->getWorldTransform().getOrigin());
-		cylPos.setY(position.y());
-
-		btScalar dist = btDistance(cylPos, position);
-		//can see
-		if (dist < 40) {//30
-			if (btDot(boid_front, cylPos - position) > VISIBILITY) {//in front
-				avoidVec = position - cylPos;
-				DrawLine1(position, cylPos, colour.blue);
-			}
-		}
+void Boid::Wind() {
+	if (windForce) {
+		body0->applyCentralForce(btVector3(5, 0, 0));
 	}
-
-	
-	if(avoidVec.length()>1){
-	avoidVec= avoidVec.safeNormalize();
-	}
-	body0->applyCentralForce(avoidVec*20);
-	//body0->applyTorque(btVector3(0, avoidVec.getZ(), 0)*10);
-	//body0->applyTorque(20.0 * boid_front.cross(avoidVec*10) - 10.0*avel);
-	body0->applyTorque(20.0 * boid_front.cross(avoidVec * 2));
-	return avoidVec;
 }
 
 
-void Boid::DrawLine1(const btVector3 &from, const btVector3 &to, const btVector3 &c) {
+btVector3 Boid::CheckToNormalize(btVector3 &_vec) {
+	 //normalise only if the vector's lenght is more than 1
+	_vec.length() > 1 ? _vec = _vec.safeNormalize() : _vec;
+	return _vec;
+}
+
+
+void Boid::DrawLine1(const btVector3 &_from, const btVector3 &_to, const btVector3 &_c) {
 
 	if (!drawGizmos)return;
 
 	glLineWidth(0.1f);
 	glBegin(GL_LINES);
-	glColor3f(c.x(), c.y(), c.z());
-	btglVertex3(from.x(), from.y(), from.z());
-	btglVertex3(to.x(), to.y(), to.z());
+	glColor3f(_c.x(), _c.y(), _c.z());
+	btglVertex3(_from.x(), _from.y(), _from.z());
+	btglVertex3(_to.x(), _to.y(), _to.z());
 	glEnd();
 
 }

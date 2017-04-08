@@ -2,13 +2,6 @@
 #include "btBulletDynamicsCommon.h"
 #include <vector>
 
-
-
-#include <stdio.h> //printf debugging
-#include <string.h>
-#include <string>
-
-
 class Boid
 {
 
@@ -21,7 +14,7 @@ public:
 	btVector3 Avoid(std::vector <btRigidBody*> &obst);
 
 	//not important
-	bool drawGizmos = true;
+	bool drawGizmos = false;
 	bool windForce = false;
 	
 
@@ -69,16 +62,17 @@ private:
 
 	void LimitVelocity(btScalar _limit);
 	void RadialLimit(btScalar _limit);
-
+	void Wind();
 
 	void DrawLine1(const btVector3 &from, const btVector3 &to, const btVector3 &c);
 	
 
 	//flocking logic
 	btVector3 Alignment(std::vector <Boid> &boids);//steer towards the average heading of local flockmates
-	btVector3 Cohesion(std::vector <Boid> &boids);//steer to move toward the average position (center of mass) of local flockmates
+	void Cohesion(std::vector <Boid> &boids);//steer to move toward the average position (center of mass) of local flockmates
 	btVector3 Separation(std::vector <Boid> &boids);//steer to avoid crowding local flockmates
 
+	btVector3 CheckToNormalize(btVector3& vec);
 
 	
 //my colours
