@@ -111,7 +111,7 @@ btVector3 Boid::Separation(std::vector <Boid> &boids) {
 	}
 
 	CheckToNormalize(sVec);
-	sVec = sVec*-1;
+	//sVec = sVec*-1;
 	body0->applyCentralForce(sVec*SEPARATION_STRENGTH);
 	return sVec*SEPARATION_STRENGTH;
 }

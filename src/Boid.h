@@ -30,7 +30,7 @@ private:
 	//visibility of 3 rules
 	const btScalar MAX_ALIGHNMENT_VISIBILITY = 40;
 	const btScalar MAX_COHESION_VISIBILITY = 40;
-	const btScalar MAX_SEPARATION_VISIBILITY = 20;//10
+	const btScalar MAX_SEPARATION_VISIBILITY = 10;//10
 	const btScalar VISIBILITY = 0.7;//0 -- 0.7 works better
 
 
@@ -38,7 +38,7 @@ private:
 	const btScalar PHYSICS_STRENGTH = 1.2;//1.5
 	const btScalar ALIGNMENT_STRENGTH =1.5 ;//1.2
 	const btScalar COHESION_STRENGTH = 1;//2
-	const btScalar SEPARATION_STRENGTH = 1;//4
+	const btScalar SEPARATION_STRENGTH = .5;//4
 	//boid vectors
 	btVector3 boid_front;
 	btVector3 boid_top;
